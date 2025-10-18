@@ -1,0 +1,93 @@
+        .admin-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            color: #fff;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .admin-sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .sidebar-brand {
+            padding: 1.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            white-space: nowrap;
+        }
+
+        .sidebar-brand .brand-icon {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .sidebar-brand .brand-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+
+        .admin-sidebar.collapsed .brand-text,
+        .admin-sidebar.collapsed .nav-text,
+        .admin-sidebar.collapsed .dropdown-caret {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .sidebar-nav .nav-item {
+            margin: 0.25rem 0.5rem;
+        }
+
+        .sidebar-nav .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .sidebar-nav .nav-link:hover {
+            background: var(--sidebar-hover);
+            color: #fff;
+        }
+
+        .sidebar-nav .nav-link.active {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .sidebar-nav .nav-link i {
+            min-width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }

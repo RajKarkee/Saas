@@ -1,0 +1,18 @@
+@forward './variable/main';
+@forward './navbar/main';
+@forward './sidebar/main';
+@forward './layout/main';
+@forward './layout/mobile';
+@forward './form/main';
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fc;
+            overflow-x: hidden;
+        }

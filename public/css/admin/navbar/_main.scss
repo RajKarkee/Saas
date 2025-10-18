@@ -1,0 +1,42 @@
+   .nav-dropdown {
+            position: relative;
+        }
+
+        .nav-dropdown-toggle {
+            cursor: pointer;
+        }
+
+        .dropdown-caret {
+            margin-left: auto;
+            transition: transform 0.3s;
+            font-size: 0.75rem;
+        }
+
+        .nav-dropdown.open .dropdown-caret {
+            transform: rotate(180deg);
+        }
+
+        .nav-dropdown-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-dropdown.open .nav-dropdown-menu {
+            max-height: 500px;
+        }
+
+        .nav-dropdown-menu .nav-item {
+            margin: 0;
+        }
+
+        .nav-dropdown-menu .nav-link {
+            padding-left: 3rem;
+            font-size: 0.9rem;
+        }
+
+        .admin-sidebar.collapsed .nav-dropdown-menu {
+            display: none;
+        }

@@ -1,0 +1,39 @@
+.admin-form {
+    
+        .image-drop {
+            border: 2px dashed #e9ecef;
+            border-radius: .6rem;
+            background: #fff;
+            cursor: pointer;
+            transition: border-color .15s ease, background .15s ease;
+        }
+
+        .image-drop:focus {
+            outline: none;
+            border-color: #4e73df;
+            box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.08);
+        }
+
+        .image-drop.dragover {
+            background: #f8f9ff;
+            border-color: #4e73df;
+        }
+
+        .image-preview {
+            width: 100%;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: .5rem;
+            background: #f6f7fb;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+    }

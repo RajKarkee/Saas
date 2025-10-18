@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Admin extends Model
+{
+    protected $table = 'admins';
+
+    protected $fillable = [
+        'name', 'email', 'password', 'status'
+    ];
+
+    protected $hidden = [
+        'password',
+    ];
+
+    public function restaurants()
+    {
+        return $this->hasMany(Restaurant::class, 'owner_id');
+    }
+
+    public function adminPhoto()
+    {
+        return $this->hasOne(AdminPhoto::class);
+    }
+
+    public function adminRestaurant()
+    {
+        return $this->hasOne(AdminRestaurant::class);
+    }
+}
