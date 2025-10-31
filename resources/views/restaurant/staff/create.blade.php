@@ -1,4 +1,4 @@
-@extends('restaurant.welcome')
+@extends('restaurant.layout.app')
 
 @section('content')
     <div class="container mt-5">

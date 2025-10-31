@@ -41,9 +41,11 @@ class AdminController extends Controller
         // Create Sanctum token with abilities
         $token = $superAdmin->createToken('super-admin-token', ['superadmin'])->plainTextToken;
 
-        // Store the plain token in session for middleware verification
-        $request->session()->put('superadmin_token', $token);
-        $request->session()->put('superadmin_id', $superAdmin->id);
+    // Store the plain token in session for middleware verification
+    $request->session()->put('superadmin_token', $token);
+    $request->session()->put('superadmin_id', $superAdmin->id);
+    // Regenerate session ID to persist and mitigate fixation
+    $request->session()->regenerate();
 
         return response()->json([
             'message' => 'Login successful',

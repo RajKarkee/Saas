@@ -39,6 +39,10 @@ return [
         'driver' => 'sanctum',
         'provider' => 'super_admins',
         ],
+        'admin' => [
+            'driver' => 'sanctum',
+            'provider' => 'admins',
+        ],
     ],
 
     'guards' => [
@@ -80,6 +84,10 @@ return [
         'super_admins' => [
             'driver' => 'eloquent',
             'model' => App\Models\SuperAdmin::class,
+        ],
+        'admins' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Admin::class,
         ],
     ],
     /*

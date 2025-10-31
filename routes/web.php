@@ -5,9 +5,10 @@ use App\Http\Controllers\Super_Admin\RestaurantController as Super_AdminRestaura
 use App\Http\Controllers\Restaurant\AuthenticationController as RestaurantAuthController;
 use App\Http\Controllers\Restaurant\Staff\StaffController as RestaurantStaffController;
 use App\Http\Controllers\Super_Admin\AdminController as SuperAdminadminController;
+use App\Http\Controllers\Admin\LoginController as AdminLogin;
 
 Route::get('/', function () {
-    return view('admin.layout.dashboard');
+    return view('restaurant.layout.app');
 });
 Route::get('/dashboard', function () {
     return view('admin.layout.dashboard');
@@ -15,6 +16,8 @@ Route::get('/dashboard', function () {
 Route::get('/superadmin/login', [SuperAdminadminController::class, 'showLoginForm'])->name('superadmin.login');
 Route::post('/superadmin/login', [SuperAdminadminController::class, 'login']);
 Route::post('/superadmin/logout', [SuperAdminadminController::class, 'logout'])->name('superadmin.logout');
+  Route::get('admin/login',[AdminLogin::class,'login'])->name('login');
+  Route::post('admin/verify',[AdminLogin::class,'verify'])->name('admin.verify');
 
 Route::prefix('super_admin')->middleware(['superadmin.sanctum:superadmin'])->name('super_admin.')->group(function(){
     Route::prefix('admins')->name('admins.')->group(function(){
@@ -43,7 +46,11 @@ Route::prefix('restaurant')->name('restaurant.')->group(function(){
 });
 });
 
-
+Route::prefix('admin')->middleware(['admin.sanctum:admin'])->name('admin.')->group(function(){
+  Route::get('/dashboard', function () {
+      return view('restaurant.dashboard');
+  })->name('dashboard');
+});
 Route::prefix('restaurant')->name('restaurant.')->group(function(){
     // Registration disabled for restaurants (login-only)
     // Route::post('/register',[RestaurantAuthController::class,'register'])->name('register');

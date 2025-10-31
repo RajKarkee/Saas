@@ -23,7 +23,7 @@
                 <div class="auth-logo">
                     <i class="fas fa-utensils"></i>
                 </div>
-                <h2>Super Admin</h2>
+                <h2>Admin</h2>
                 <p>Sign in to your admin dashboard</p>
             </div>
 
@@ -33,7 +33,7 @@
                     <span id="loginErrorText"></span>
                 </div>
 
-                <form id="loginForm" method="POST" action="{{ route('restaurant.login') }}">
+                <form id="loginForm" method="POST" action="{{ route('admin.verify') }}">
                     @csrf
                     <div class="form-group">
                         <label class="form-label">Email Address <span class="required">*</span></label>
@@ -154,7 +154,7 @@
             submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Signing in...');
 
             $.ajax({
-                url: '{{ route('restaurant.login') }}',
+                url: '{{ route('admin.verify') }}',
                 method: 'POST',
                 data: loginData,
                 headers: {
@@ -166,7 +166,7 @@
                         window.location.href = res.redirect;
                     } else {
                         // fallback
-                        window.location.href = '{{ route('dashboard') }}';
+                        window.location.href = '{{ route('admin.dashboard') }}';
                     }
                 },
                 error: function(xhr) {
