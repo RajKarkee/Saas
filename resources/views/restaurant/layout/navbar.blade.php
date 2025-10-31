@@ -3,10 +3,10 @@
             <button class="menu-toggle" id="menuToggle">
                 <i class="fas fa-bars"></i>
             </button>
-            <div class="search-bar">
+            {{-- <div class="search-bar">
                 <i class="fas fa-search"></i>
                 <input type="text" placeholder="Search..." id="globalSearch">
-            </div>
+            </div> --}}
         </div>
         <div class="navbar-right">
             <div class="navbar-icon">

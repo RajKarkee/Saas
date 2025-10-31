@@ -6,6 +6,8 @@ use App\Http\Controllers\Restaurant\AuthenticationController as RestaurantAuthCo
 use App\Http\Controllers\Restaurant\Staff\StaffController as RestaurantStaffController;
 use App\Http\Controllers\Super_Admin\AdminController as SuperAdminadminController;
 use App\Http\Controllers\Admin\LoginController as AdminLogin;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController;
 
 Route::get('/', function () {
     return view('restaurant.layout.app');
@@ -47,9 +49,10 @@ Route::prefix('restaurant')->name('restaurant.')->group(function(){
 });
 
 Route::prefix('admin')->middleware(['admin.sanctum:admin'])->name('admin.')->group(function(){
-  Route::get('/dashboard', function () {
-      return view('restaurant.dashboard');
-  })->name('dashboard');
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::post('/restaurants', [AdminDashboardController::class, 'store'])->name('restaurants.store');
+    Route::get('/restaurant', [AdminRestaurantController::class, 'edit'])->name('restaurant.edit');
+    Route::put('/restaurant', [AdminRestaurantController::class, 'update'])->name('restaurant.update');
 });
 Route::prefix('restaurant')->name('restaurant.')->group(function(){
     // Registration disabled for restaurants (login-only)

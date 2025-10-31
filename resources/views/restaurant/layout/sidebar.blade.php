@@ -6,13 +6,15 @@
         <nav class="sidebar-nav">
             <ul class="list-unstyled">
                 <li class="nav-item">
-                    <a href="#" class="nav-link active" data-page="dashboard">
+                    <a href="{{ route('admin.dashboard') }}"
+                        class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                         <i class="fas fa-tachometer-alt"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link" data-page="restaurants">
+                    <a href="{{ route('admin.restaurant.edit') }}"
+                        class="nav-link {{ request()->routeIs('admin.restaurant.edit') ? 'active' : '' }}">
                         <i class="fas fa-store"></i>
                         <span>Restaurants</span>
                     </a>
