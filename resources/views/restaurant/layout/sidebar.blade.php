@@ -16,7 +16,14 @@
                     <a href="{{ route('admin.restaurant.edit') }}"
                         class="nav-link {{ request()->routeIs('admin.restaurant.edit') ? 'active' : '' }}">
                         <i class="fas fa-store"></i>
-                        <span>Restaurants</span>
+                        <span>Restaurant</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.restaurant.settings') }}"
+                        class="nav-link {{ request()->routeIs('admin.restaurant.settings') ? 'active' : '' }}">
+                        <i class="fas fa-cog"></i>
+                        <span>Restaurant Setting</span>
                     </a>
                 </li>
                 <li class="nav-item nav-dropdown">
@@ -28,7 +35,7 @@
                     <ul class="list-unstyled nav-dropdown-menu" id="staff-dropdown"
                         style="display:none; padding-left:10px;">
                         <li class="nav-item">
-                            <a href="{{ route('restaurant.staff.index') }}" class="nav-link">
+                            <a href="{{ route('admin.restaurant.staff.index') }}" class="nav-link">
                                 <i class="fas fa-user-friends"></i>
                                 <span>All Staff</span>
                             </a>

@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container mt-5">
-        <h3>Add New Staff Member</h3>
+        <h3>Edit Staff Member</h3>
 
         <div class="card mt-4">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -11,8 +11,10 @@
             </div>
 
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.restaurant.staff.store') }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('admin.restaurant.staff.update', $staff->id) }}"
+                    enctype="multipart/form-data">
                     @csrf
+                    @method('PUT')
 
                     <div class="row">
                         <div class="col-lg-8">
@@ -20,7 +22,7 @@
                                 <div class="col-md-6 mb-3">
                                     <label for="name" class="form-label">Full Name</label>
                                     <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                        id="name" name="name" value="{{ old('name') }}" required>
+                                        id="name" name="name" value="{{ old('name', $staff->name) }}" required>
                                     @error('name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -29,7 +31,7 @@
                                 <div class="col-md-6 mb-3">
                                     <label for="phone" class="form-label">Phone (optional)</label>
                                     <input type="text" class="form-control @error('phone') is-invalid @enderror"
-                                        id="phone" name="phone" value="{{ old('phone') }}">
+                                        id="phone" name="phone" value="{{ old('phone', $staff->phone) }}">
                                     @error('phone')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -40,7 +42,7 @@
                                 <div class="col-md-6 mb-3">
                                     <label for="email" class="form-label">Email</label>
                                     <input type="email" class="form-control @error('email') is-invalid @enderror"
-                                        id="email" name="email" value="{{ old('email') }}" required>
+                                        id="email" name="email" value="{{ old('email', $staff->email) }}" required>
                                     @error('email')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -49,7 +51,7 @@
                                 <div class="col-md-6 mb-3">
                                     <label for="password" class="form-label">Password (optional)</label>
                                     <input type="password" class="form-control @error('password') is-invalid @enderror"
-                                        id="password" name="password" placeholder="Password">
+                                        id="password" name="password" placeholder="Leave blank to keep current password">
                                     @error('password')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -62,13 +64,13 @@
                                     <select class="form-control @error('role') is-invalid @enderror" id="role"
                                         name="role" required>
                                         <option value="">Select Role</option>
-                                        <option value="Manager" {{ old('role') == 'Manager' ? 'selected' : '' }}>Manager
-                                        </option>
-                                        <option value="Staff" {{ old('role') == 'Staff' ? 'selected' : '' }}>Staff
-                                        </option>
+                                        <option value="Manager"
+                                            {{ old('role', $staff->role) == 'Manager' ? 'selected' : '' }}>Manager</option>
+                                        <option value="Staff"
+                                            {{ old('role', $staff->role) == 'Staff' ? 'selected' : '' }}>Staff</option>
                                         <option value="Delivery Person"
-                                            {{ old('role') == 'Delivery Person' ? 'selected' : '' }}>Delivery Person
-                                        </option>
+                                            {{ old('role', $staff->role) == 'Delivery Person' ? 'selected' : '' }}>Delivery
+                                            Person</option>
                                     </select>
                                     @error('role')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -79,10 +81,12 @@
                                     <label for="status" class="form-label">Status</label>
                                     <select class="form-control @error('status') is-invalid @enderror" id="status"
                                         name="status">
-                                        <option value="active" {{ old('status', 'active') == 'active' ? 'selected' : '' }}>
+                                        <option value="active"
+                                            {{ old('status', $staff->status ?? 'active') == 'active' ? 'selected' : '' }}>
                                             Active</option>
-                                        <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>
-                                            Inactive</option>
+                                        <option value="inactive"
+                                            {{ old('status', $staff->status) == 'inactive' ? 'selected' : '' }}>Inactive
+                                        </option>
                                     </select>
                                     @error('status')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -91,7 +95,7 @@
                             </div>
 
                             <div class="d-flex">
-                                <button type="submit" class="btn btn-primary">Add Staff Member</button>
+                                <button type="submit" class="btn btn-primary">Update Staff Member</button>
                             </div>
                         </div>
 
@@ -103,8 +107,18 @@
                                     <input type="file" id="imageInput" name="photo" accept="image/*"
                                         style="display:none">
                                     <div class="image-preview" id="imagePreview">
-                                        <img src="data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20400%20300'><rect%20fill='%23f6f7fb'%20width='100%25'%20height='100%25'/><text%20x='50%25'%20y='50%25'%20dominant-baseline='middle'%20text-anchor='middle'%20fill='%23999'%20font-family='Arial'%20font-size='20'>No%20image</text></svg>"
-                                            alt="preview" id="previewImg">
+                                        @php
+                                            $photoPath = $staff->photo ?? null;
+                                            $imageUrl = $photoPath
+                                                ? (Illuminate\Support\Str::startsWith($photoPath, [
+                                                    'http://',
+                                                    'https://',
+                                                ])
+                                                    ? $photoPath
+                                                    : asset('storage/' . $staff->photo_url))
+                                                : asset('images/default-avatar.png');
+                                        @endphp
+                                        <img src="{{ $imageUrl }}" alt="preview" id="previewImg">
                                     </div>
                                     <p class="small text-muted mt-2">Drag & drop an image here or <button type="button"
                                             class="btn btn-link p-0" id="browseBtn">browse</button></p>
@@ -129,6 +143,7 @@
             </div>
         </div>
     </div>
+
     <script>
         (function() {
             const imageDrop = document.getElementById('imageDrop');

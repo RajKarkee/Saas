@@ -32,4 +32,16 @@ class Restaurant extends Model
     {
         return $this->belongsTo(Admin::class, 'owner_id');
     }
+    public function settings()
+    {
+        return $this->hasOne(RestaurantSetting::class);
+    }
+    public function menuCategories()
+    {
+        return $this->hasMany(Menu_category::class);
+    }
+    public function menuItems()
+    {
+        return $this->hasMany(Menu_item::class);
+    }
 }

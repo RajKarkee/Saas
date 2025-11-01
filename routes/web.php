@@ -50,9 +50,22 @@ Route::prefix('restaurant')->name('restaurant.')->group(function(){
 
 Route::prefix('admin')->middleware(['admin.sanctum:admin'])->name('admin.')->group(function(){
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-    Route::post('/restaurants', [AdminDashboardController::class, 'store'])->name('restaurants.store');
-    Route::get('/restaurant', [AdminRestaurantController::class, 'edit'])->name('restaurant.edit');
-    Route::put('/restaurant', [AdminRestaurantController::class, 'update'])->name('restaurant.update');
+    Route::prefix('/restaurants')->name('restaurant.')->group(function(){
+    Route::post('/store', [AdminDashboardController::class, 'store'])->name('store');
+    Route::get('/edit', [AdminRestaurantController::class, 'edit'])->name('edit');
+    Route::put('/update', [AdminRestaurantController::class, 'update'])->name('update');
+    Route::match(['get','post','put'],'/settings',[AdminRestaurantController::class,'settings']
+    )->name('settings');
+    Route::prefix('/staff')->name('staff.')->group(function(){
+    Route::get('/index', [AdminRestaurantController::class, 'staffIndex'])->name('index');
+    Route::get('/create', [AdminRestaurantController::class, 'staffCreate'])->name('create');
+    Route::post('/store', [AdminRestaurantController::class, 'staffStore'])->name('store');
+    Route::get('/edit/{id}', [AdminRestaurantController::class, 'staffEdit'])->name('edit');
+    Route::put('/update/{id}', [AdminRestaurantController::class, 'staffUpdate'])->name('update');
+    Route::delete('/destroy/{id}', [AdminRestaurantController::class, 'staffDestroy'])->name('destroy');
+    });
+    
+});
 });
 Route::prefix('restaurant')->name('restaurant.')->group(function(){
     // Registration disabled for restaurants (login-only)

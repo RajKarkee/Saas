@@ -87,7 +87,7 @@
                                                 </td>
                                                 <td class="text-end">
                                                     <a class="btn btn-sm btn-outline-primary"
-                                                        href="{{ route('super_admin.restaurant.edit', $restaurant->id) }}">
+                                                        href="{{ route('admin.restaurant.edit', $restaurant->id) }}">
                                                         <i class="fas fa-pen me-1"></i>Edit
                                                     </a>
                                                 </td>

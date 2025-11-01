@@ -16,4 +16,8 @@ class staff extends Model
     {
         return $this->belongsTo(Restaurant::class);
     }
+    public function photo()
+    {
+        return $this->hasOne(Staff_photo::class);
+    }
 }
