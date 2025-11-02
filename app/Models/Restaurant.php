@@ -44,4 +44,8 @@ class Restaurant extends Model
     {
         return $this->hasMany(Menu_item::class);
     }
+    public function menuItemAddons()
+    {
+        return $this->hasManyThrough(Menu_item_addon::class, Menu_item::class, 'restaurant_id', 'menu_item_id', 'id', 'id');
+    }
 }

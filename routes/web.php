@@ -66,7 +66,32 @@ Route::prefix('admin')->middleware(['admin.sanctum:admin'])->name('admin.')->gro
     Route::get('/deliverymen', [AdminRestaurantController::class, 'deliveryMen'])->name('deliverymen');
     Route::get('/manager', [AdminRestaurantController::class, 'manager'])->name('manager');
     });
-    
+    Route::prefix('/menu')->name('menu.')->group(function(){
+    Route::prefix('/categories')->name('categories.')->group(function(){
+    Route::get('/index', [AdminRestaurantController::class,'categoryIndex'])->name('index');
+    Route::get('/create', [AdminRestaurantController::class,'categoryCreate'])->name('create');
+    Route::post('/store', [AdminRestaurantController::class,'categoryStore'])->name('store');
+    Route::get('/edit/{id}', [AdminRestaurantController::class,'categoryEdit'])->name('edit');
+    Route::put('/update/{id}', [AdminRestaurantController::class,'categoryUpdate'])->name('update');
+    Route::delete('/destroy/{id}', [AdminRestaurantController::class,'categoryDestroy'])->name('destroy');
+    });
+    Route::prefix('/items')->name('items.')->group(function(){
+    Route::get('/index/{id}', [AdminRestaurantController::class, 'itemIndex'])->name('index');
+    Route::get('/create/{id}', [AdminRestaurantController::class, 'itemCreate'])->name('create');
+    Route::post('/store/{id}', [AdminRestaurantController::class, 'itemStore'])->name('store');
+    Route::get('/edit/{id}', [AdminRestaurantController::class, 'itemEdit'])->name('edit');
+    Route::put('/update/{id}', [AdminRestaurantController::class, 'itemUpdate'])->name('update');
+    Route::delete('/destroy/{id}', [AdminRestaurantController::class, 'itemDestroy'])->name('destroy');
+    Route::prefix('/addons')->name('addons.')->group(function(){
+        Route::get('/index/{id}', [AdminRestaurantController::class, 'addonIndex'])->name('index');
+        Route::get('/create/{id}', [AdminRestaurantController::class, 'addonCreate'])->name('create');
+        Route::post('/store/{id}', [AdminRestaurantController::class, 'addonStore'])->name('store');
+        Route::get('/edit/{id}', [AdminRestaurantController::class, 'addonEdit'])->name('edit');
+        Route::put('/update/{id}', [AdminRestaurantController::class, 'addonUpdate'])->name('update');
+        Route:: delete('/destroy/{id}', [AdminRestaurantController::class, 'addonDestroy'])->name('destroy');
+    });
+});
+    });
 });
 });
 Route::prefix('restaurant')->name('restaurant.')->group(function(){

@@ -12,6 +12,12 @@ use App\Models\Staff;
 use App\Models\Admin;
 use App\Models\Staff_photo;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Menu_Category;
+use App\Models\Menu_Item;
+use App\Models\Menu_item_addon;
+use App\Models\Menu_item_image;
+
+
 
 class RestaurantController extends Controller
 {
@@ -324,5 +330,339 @@ public function staffStore(Request $request)
 
         return view('restaurant.staff.manager',  compact('managers', 'staff_photos')
         );
+    }
+    public function categoryIndex(){
+        $adminId = session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+        $categories = $restaurant->menuCategories()->get();
+        return view('restaurant.menu.categories.index', compact('categories'));
+    }
+    public function categoryCreate(){
+        return view('restaurant.menu.categories.form');
+    }
+    public function categoryStore(Request $request){
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'position' => ['nullable', 'integer', 'min:1','unique:menu_categories,position,except,id'],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
+
+      
+   $category = new Menu_Category();
+        $category->restaurant_id = $restaurant->id;
+        $category->name = $validated['name'];
+        $category->position = $validated['position'] ?? null;
+        $category->is_active = $validated['is_active'] ?? true;
+        $category->description = $validated['description'] ?? null;
+        $category->save();
+
+        return redirect()->route('admin.restaurant.menu.categories.index')->with('success', 'Category created successfully.');
+    }
+    public function categoryEdit(Request $request, $categoryId){
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+        $category = $restaurant->menuCategories()->findOrFail($categoryId);
+
+        return view('restaurant.menu.categories.form', compact('category'));
+    }
+    public function categoryUpdate(Request $request, $categoryId){
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+        $category = $restaurant->menuCategories()->findOrFail($categoryId);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'position' => ['nullable', 'integer', 'min:1','unique:menu_categories,position,'.$category->id],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
+
+        $category->name = $validated['name'];
+        $category->position = $validated['position'] ?? null;
+        $category->is_active = $validated['is_active'] ?? true;
+        $category->description = $validated['description'] ?? null;
+        $category->save();
+
+        return redirect()->route('admin.restaurant.menu.categories.index')->with('success', 'Category updated successfully.');
+    }
+    public function categoryDestroy(Request $request, $id){
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+        $category = $restaurant->menuCategories()->findOrFail($id);
+
+        $category->delete();
+
+        return redirect()->route('admin.restaurant.menu.categories.index')->with('success', 'Category deleted successfully.');
+    }
+    public function itemIndex(Request $request, $id){
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+       $category = Menu_Category::findOrFail($id);
+      
+
+        //
+    
+        $itemsQuery = $restaurant->menuItems();
+
+        if ($category) {
+            $itemsQuery->where('menu_category_id', $category->id);
+        }
+
+        $items = $itemsQuery->get();
+        $item_images = Menu_item_image::whereIn('menu_item_id', $items->pluck('id'))->get()->groupBy('menu_item_id');
+
+        return view('restaurant.menu.items.index', compact('items', 'category', 'item_images'));
+    }
+    public function itemCreate(Request $request, $categoryId){
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+       $category = Menu_Category::findOrFail($categoryId);
+        return view('restaurant.menu.items.form', compact('category'));
+    }
+    public function itemStore(Request $request, $categoryId){
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+       $category = Menu_Category::findOrFail($categoryId);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'is_available' => ['nullable', 'boolean'],
+            'stock_quantity' => ['nullable', 'integer',],
+            'image' => ['nullable', 'image', 'max:2048'],
+            'image_alt' => ['nullable', 'image', 'max:2048'],
+        ]);
+
+        $item = new Menu_Item();
+        $item->restaurant_id = $restaurant->id;
+        $item->menu_category_id = $category->id;
+        $item->name = $validated['name'];
+        $item->description = $validated['description'] ?? null;
+        $item->price = $validated['price'];
+        $item->is_available = $validated['is_available'] ?? true;
+        $item->stock_quantity = $validated['stock_quantity'] ?? null;
+   
+        $item->save();
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('menu_item_images', 'public');
+            $imageAltPath = null;
+            if ($request->hasFile('image_alt')) {
+                $imageAltPath = $request->file('image_alt')->store('menu_item_images', 'public');
+            }
+            Menu_item_image::create([
+                'menu_item_id' => $item->id,
+                'image_alt' => $imageAltPath,
+                'image_url' => $imagePath,
+            ]);
+        }
+
+        return redirect()->route('admin.restaurant.menu.items.index', $category->id)->with('success', 'Menu item added successfully.');
+    }
+    public function itemEdit(Request $request, $itemId){
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+        $item = $restaurant->menuItems()->findOrFail($itemId);
+        $category = Menu_Category::findOrFail($item->menu_category_id);
+        $item_images = Menu_item_image::where('menu_item_id', $item->id)->get();
+
+        return view('restaurant.menu.items.form', compact('item', 'category','item_images'));
+    }
+    public function itemUpdate(Request $request, $itemId){
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+        $item = $restaurant->menuItems()->findOrFail($itemId);
+        $category = Menu_Category::findOrFail($item->menu_category_id);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'is_available' => ['nullable', 'boolean'],
+            'stock_quantity' => ['nullable', 'integer',],
+        ]);
+
+        $item->name = $validated['name'];
+        $item->description = $validated['description'] ?? null;
+        $item->price = $validated['price'];
+        $item->is_available = $validated['is_available'] ?? true;
+        $item->stock_quantity = $validated['stock_quantity'] ?? null;
+   
+        $item->save();
+        if(request()->hasFile('image')){
+            $imagePath = $request->file('image')->store('menu_item_images', 'public');
+            if(request()->hasFile('image_alt')){
+                $image_alt = $request->file('image_alt')->store('menu_item_images', 'public');
+            }else{
+                $image_alt = null;
+            }
+           
+   $menu_item_image= Menu_item_image::where('menu_item_id', $item->id)->first();
+            if($menu_item_image){
+                $menu_item_image->image_url = $imagePath;
+                $menu_item_image->image_alt = $image_alt;
+                $menu_item_image->save();
+            }else{
+                Menu_item_image::create([
+                    'menu_item_id' => $item->id,
+                    'image_alt' => $image_alt ,
+                    'image_url' => $imagePath,
+                ]);
+            }
+        }
+
+        return redirect()->route('admin.restaurant.menu.items.index', $category->id)->with('success', 'Menu item updated successfully.');
+    }
+    public function itemDestroy(Request $request, $itemId){
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+        $item = $restaurant->menuItems()->findOrFail($itemId);
+        $category = Menu_Category::findOrFail($item->menu_category_id);
+
+        // Delete associated images if exist
+        Menu_item_image::where('menu_item_id', $item->id)->delete();
+
+        $item->delete();
+
+        return redirect()->route('admin.restaurant.menu.items.index', $category->id)->with('success', 'Menu item deleted successfully.');
+    }
+    public function addonIndex(Request $request, $itemId){
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+       $item = Menu_Item::findOrFail($itemId);
+       $category = Menu_Category::findOrFail($item->menu_category_id);
+
+        //
+    
+        $addons = $restaurant->menuItemAddons()->where('menu_item_id', $item->id)->get();
+
+        return view('restaurant.menu.addons.index', compact('addons', 'item', 'category'));
+    }
+    public function addonCreate(Request $request, $itemId){
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+       $item = Menu_Item::findOrFail($itemId);
+        return view('restaurant.menu.addons.form', compact('item','restaurant'));
+    }
+    public function addonStore(Request $request, $itemId){
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+       $item = Menu_Item::findOrFail($itemId);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'additional_price' => ['required', 'numeric', 'min:0'],
+            'is_active' => [ 'boolean'],
+            'is_available' => [ 'boolean'],
+        ]);
+
+        $addon = new Menu_item_addon();
+        $addon->restaurant_id = $restaurant->id;
+        $addon->menu_item_id = $item->id;
+        $addon->name = $validated['name'];
+        $addon->additional_price = $validated['additional_price'];
+     
+        $addon->is_available = $validated['is_available'] ?? true;
+        $addon->save();
+
+        return redirect()->route('admin.restaurant.menu.items.addons.index', $item->id)->with('success', 'Addon added successfully.');
+    }
+    public function addonEdit(Request $request, $id){
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+       $addon = Menu_item_addon::findOrFail($id);
+         $item = Menu_Item::findOrFail($addon->menu_item_id);
+
+        return view('restaurant.menu.addons.form', compact('addon', 'item'));
+    }
+    public function addonUpdate(Request $request, $id){
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+        $addon = Menu_item_addon::findOrFail($id);
+        $item = Menu_Item::findOrFail($addon->menu_item_id);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'additional_price' => ['required', 'numeric', 'min:0'],
+            'is_active' => [ 'boolean'],
+            'is_available' => [ 'boolean'],
+        ]);
+
+        $addon->name = $validated['name'];
+        $addon->additional_price = $validated['additional_price'];
+     
+        $addon->is_available = $validated['is_available'] ?? true;
+        $addon->save();
+        
+        return redirect()->route('admin.restaurant.menu.items.addons.index', $item->id)->with('success', 'Addon updated successfully.');
     }
 }

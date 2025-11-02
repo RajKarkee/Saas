@@ -57,11 +57,13 @@
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link" data-page="menus">
+                    <a href="{{ route('admin.restaurant.menu.categories.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.restaurant.menu.categories.index') ? 'active' : '' }}">
                         <i class="fas fa-book-open"></i>
                         <span>Menus</span>
                     </a>
                 </li>
+
                 <li class="nav-item">
                     <a href="#" class="nav-link" data-page="orders">
                         <i class="fas fa-shopping-cart"></i>

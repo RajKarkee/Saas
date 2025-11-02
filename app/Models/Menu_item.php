@@ -22,4 +22,16 @@ class Menu_item extends Model
     {
         return $this->belongsTo(Menu_category::class, 'menu_category_id');
     }
+    public function restaurant()
+    {
+        return $this->belongsTo(Restaurant::class, 'restaurant_id');
+    }
+    public function images()
+    {
+        return $this->hasMany(Menu_item_image::class, 'menu_item_id');
+    }
+    public function addons()
+    {
+        return $this->hasMany(Menu_item_addon::class, 'menu_item_id');
+}
 }
