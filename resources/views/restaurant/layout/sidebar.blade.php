@@ -41,10 +41,17 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            {{-- Delivery men route may not exist yet; point to a safe placeholder route or hash --}}
-                            <a href="#" class="nav-link">
+
+                            <a href="{{ route('admin.restaurant.staff.deliverymen') }}" class="nav-link">
                                 <i class="fas fa-motorcycle"></i>
                                 <span>Delivery Men</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+
+                            <a href="{{ route('admin.restaurant.staff.manager') }}" class="nav-link">
+                                <i class="fas fa-user-tie"></i>
+                                <span>Managers</span>
                             </a>
                         </li>
                     </ul>

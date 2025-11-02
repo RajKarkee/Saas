@@ -147,8 +147,9 @@ class RestaurantController extends Controller
         $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
 
         $staff = $restaurant->staff()->get();
-
-        return view('restaurant.staff.staff',  compact('staff')
+        $staff_photos = Staff_photo::whereIn('staff_id', $staff->pluck('id'))->get()->keyBy('staff_id');
+        
+        return view('restaurant.staff.staff',  compact('staff', 'staff_photos')
         );
     }
     public function staffCreate(Request $request)
@@ -293,5 +294,35 @@ public function staffStore(Request $request)
         $staff->delete();
 
         return redirect()->route('admin.restaurant.staff.index')->with('success', 'Staff member deleted successfully.');
+    }
+    public function deliveryMen(Request $request)
+    {
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+        $deliveryMen = $restaurant->staff()->where('role', 2)->get();
+        $staff_photos = Staff_photo::whereIn('staff_id', $deliveryMen->pluck('id'))->get()->keyBy('staff_id');
+
+        return view('restaurant.staff.deliveryMen',  compact('deliveryMen', 'staff_photos')
+        );
+    }
+    public function manager(Request $request)
+    {
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+        $managers = $restaurant->staff()->where('role', 0)->get();
+        $staff_photos = Staff_photo::whereIn('staff_id', $managers->pluck('id'))->get()->keyBy('staff_id');
+
+        return view('restaurant.staff.manager',  compact('managers', 'staff_photos')
+        );
     }
 }

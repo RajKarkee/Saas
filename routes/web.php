@@ -63,6 +63,8 @@ Route::prefix('admin')->middleware(['admin.sanctum:admin'])->name('admin.')->gro
     Route::get('/edit/{id}', [AdminRestaurantController::class, 'staffEdit'])->name('edit');
     Route::put('/update/{id}', [AdminRestaurantController::class, 'staffUpdate'])->name('update');
     Route::delete('/destroy/{id}', [AdminRestaurantController::class, 'staffDestroy'])->name('destroy');
+    Route::get('/deliverymen', [AdminRestaurantController::class, 'deliveryMen'])->name('deliverymen');
+    Route::get('/manager', [AdminRestaurantController::class, 'manager'])->name('manager');
     });
     
 });

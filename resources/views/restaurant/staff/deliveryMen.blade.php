@@ -2,14 +2,14 @@
 
 @section('content')
     <div class="container mt-20">
-        <h3>Manage your Staff</h3>
+        <h3>Manage your Delivery Men</h3>
         {{-- Toast container for flash messages --}}
         <div id="toastContainer" aria-live="polite" aria-atomic="true" style="position:fixed;top:1rem;right:1rem;z-index:9999;">
         </div>
         <div class="card mt-4">
             <div class="card-header">
-                <h5 class="card-title">Staff Members</h5>
-                <a href="{{ route('admin.restaurant.staff.create') }}" class="btn btn-primary float-end">Add New Staff</a>
+                <h5 class="card-title">Delivery Men</h5>
+                {{-- <a href="{{ route('admin.restaurant.staff.create') }}" class="btn btn-primary float-end">Add New Staff</a> --}}
             </div>
             <div class="card-body">
                 <div class="content-card">
@@ -28,7 +28,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($staff as $index => $member)
+                                    @foreach ($deliveryMen as $index => $member)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
                                             <td>
@@ -42,8 +42,7 @@
                                             </td>
                                             <td>{{ $member->name }}</td>
                                             <td>{{ $member->email }}</td>
-                                            <td>{{ $member->role == 0 ? 'Manager' : ($member->role == 1 ? 'Staff' : 'Delivery Man') }}
-                                            </td>
+                                            <td>{{ ucfirst($member->role) }}</td>
                                             <td>{{ ucfirst($member->status ?? 'inactive') }}</td>
                                             <td>
                                                 <a href="{{ route('admin.restaurant.staff.edit', $member->id) }}"
@@ -125,7 +124,7 @@
             }
 
             $(document).ready(function() {
-                // show server flash messages
+
                 @if (session('success'))
                     createToast({!! json_encode(session('success')) !!}, 'success');
                 @endif
@@ -147,7 +146,7 @@
                     autoWidth: false,
                 });
 
-                // JS delete handler: sends POST with _method=DELETE and CSRF token, removes row on success
+
                 $(document).on('click', '.btn-delete', function(e) {
                     const btn = this;
                     const action = btn.getAttribute('data-action');
