@@ -8,6 +8,8 @@ use App\Http\Controllers\Super_Admin\AdminController as SuperAdminadminControlle
 use App\Http\Controllers\Admin\LoginController as AdminLogin;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 
 Route::get('/', function () {
     return view('restaurant.layout.app');
@@ -92,6 +94,12 @@ Route::prefix('admin')->middleware(['admin.sanctum:admin'])->name('admin.')->gro
     });
 });
     });
+    Route::prefix('/orders')->name('orders.')->group(function(){
+    Route::get('/index', [AdminOrderController::class, 'orderIndex'])->name('index');
+    });
+});
+Route::prefix('/users')->name('users.')->group(function(){
+    Route::get('/index', [AdminUserController::class, 'userIndex'])->name('index');
 });
 });
 Route::prefix('restaurant')->name('restaurant.')->group(function(){
@@ -103,4 +111,5 @@ Route::prefix('restaurant')->name('restaurant.')->group(function(){
     Route::get('/create',[RestaurantStaffController::class,'create'])->name('create');
     Route::post('/store', [RestaurantStaffController::class, 'store'])->name('store');
     });
+
 });

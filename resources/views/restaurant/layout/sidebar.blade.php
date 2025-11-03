@@ -65,7 +65,8 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="#" class="nav-link" data-page="orders">
+                    <a href="{{ route('admin.restaurant.orders.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.restaurant.orders.index') ? 'active' : '' }}">
                         <i class="fas fa-shopping-cart"></i>
                         <span>Orders</span>
                     </a>
