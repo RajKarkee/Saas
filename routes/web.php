@@ -10,18 +10,25 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Restaurant\Staff\DeliveryController as RestaurantStaffDeliveryController;
+
+
 
 Route::get('/', function () {
-    return view('restaurant.layout.app');
+    return view('delivery.layout.app');
 });
 Route::get('/dashboard', function () {
     return view('admin.layout.dashboard');
 })->name('dashboard');
+Route::get('/delivery/login', function () {
+    return view('delivery.login');
+})->name('delivery.login');
 Route::get('/superadmin/login', [SuperAdminadminController::class, 'showLoginForm'])->name('superadmin.login');
 Route::post('/superadmin/login', [SuperAdminadminController::class, 'login']);
 Route::post('/superadmin/logout', [SuperAdminadminController::class, 'logout'])->name('superadmin.logout');
   Route::get('admin/login',[AdminLogin::class,'login'])->name('login');
   Route::post('admin/verify',[AdminLogin::class,'verify'])->name('admin.verify');
+  Route::post('delivery/verify',[RestaurantAuthController::class,'login'])->name('delivery.verify');
 
 Route::prefix('super_admin')->middleware(['superadmin.sanctum:superadmin'])->name('super_admin.')->group(function(){
     Route::prefix('admins')->name('admins.')->group(function(){
@@ -102,9 +109,10 @@ Route::prefix('/users')->name('users.')->group(function(){
     Route::get('/index', [AdminUserController::class, 'userIndex'])->name('index');
 });
 });
-Route::prefix('restaurant')->name('restaurant.')->group(function(){
-    // Registration disabled for restaurants (login-only)
-    // Route::post('/register',[RestaurantAuthController::class,'register'])->name('register');
+Route::prefix('restaurant')->middleware('staff.sanctum:staff')->name('restaurant.')->group(function(){
+   Route::prefix('delivery')->name('delivery.')->group(function(){
+    Route::get('/index',[RestaurantStaffDeliveryController::class,'index'])->name('index');
+   });
     Route::post('/login',[RestaurantAuthController::class,'login'])->name('login');
     Route::prefix('staff')->name('staff.')->group(function(){
    Route::get('/index',[RestaurantStaffController::class,'index'])->name('index');

@@ -43,6 +43,10 @@ return [
             'driver' => 'sanctum',
             'provider' => 'admins',
         ],
+        'staff' => [
+            'driver' => 'sanctum',
+            'provider' => 'staff',
+        ],
     ],
 
     'guards' => [
@@ -88,6 +92,10 @@ return [
         'admins' => [
             'driver' => 'eloquent',
             'model' => App\Models\Admin::class,
+        ],
+        'staff' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Staff::class,
         ],
     ],
     /*

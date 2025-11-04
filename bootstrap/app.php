@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'superadmin.sanctum' => \App\Http\Middleware\SanctumSuperAdmin::class,
             'admin.sanctum' => \App\Http\Middleware\SanctumAdmin::class,
+            'staff.sanctum' => \App\Http\Middleware\SanctumStaff::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

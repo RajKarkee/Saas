@@ -4,11 +4,12 @@ namespace App\Http\Controllers\Restaurant;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\User;
+use App\Models\Staff;
 use App\Models\Restaurant;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\DB;
+
 
 class AuthenticationController extends Controller
 {
@@ -21,29 +22,34 @@ class AuthenticationController extends Controller
         'email' => 'required|email',
         'password' => 'required',
     ]);
-    $credentials = $request->only('email', 'password');
-    $remember = $request->boolean('remember');
-    if (!auth()->attempt($credentials, $remember)) {
+
+    $staff = Staff::where('email', $request->email)->first();
+    if (!$staff || !Hash::check($request->password, $staff->password)) {
         return response()->json([
             'success' => false,
-            'message' => 'Invalid login details'
+            'message' => 'Invalid email or password'
         ], 401);
-
     }
-    $user = auth()->user();
-    // If user is admin (role 1) redirect to dashboard
-    $dashboardUrl = route('dashboard');
-
-    if ($request->wantsJson() || $request->ajax()) {
+    $token = $staff->createToken('staff_token', ['staff'])->plainTextToken;
+    $request->session()->put('staff_token', $token);
+    $request->session()->put('staff_id', $staff->id);
+    $request->session()->regenerate();
+    $restaurant = Restaurant::find($staff->restaurant_id);
+$routeMatch = match($staff->role){
+    0 => route('restaurant.staff.dashboard'), // Manager
+    1 => route('restaurant.staff.orders'),  // Chef1
+    2 => route('restaurant.delivery.index'), // Waiter
+};
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
-            'redirect' => $dashboardUrl,
-            'data' => [ 'user' => $user ],
+            'data' => [
+                'restaurant' => $restaurant,
+                'staff' => $staff,
+                'token' => $token,
+            ],
+            'redirect' => $routeMatch,
         ], 200);
-    }
-
-    return redirect($dashboardUrl);
     }
 
     public function logout(Request $request){
