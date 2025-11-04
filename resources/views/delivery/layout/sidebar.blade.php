@@ -50,9 +50,11 @@
                <i class="fas fa-cog nav-icon"></i>
                <span class="nav-text">Settings</span>
            </a>
-           <a href="#" class="nav-link" onclick="logout(); return false;">
-               <i class="fas fa-sign-out-alt nav-icon"></i>
-               <span class="nav-text">Logout</span>
-           </a>
+           <form action="{{ route('restaurant.delivery.logout') }}" method="POST">
+               @csrf
+               <button class="btn btn-danger" type="submit">Logout</button>
+           </form>
+
+
        </div>
    </div>

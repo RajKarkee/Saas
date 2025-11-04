@@ -10,7 +10,7 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class SanctumStaff
 {
-    protected array $defaultAbilities = ['staff'];
+    protected array $defaultAbilities = ['ability_name'];
 
     public function handle(Request $request, Closure $next, ...$abilities): Response
     {
@@ -26,8 +26,10 @@ class SanctumStaff
             abort(404, 'Page not found');
         }
 
+        $staff=$accessToken->tokenable;
+
         // Optional ability check using provided abilities or defaults
-        $required = !empty($abilities) ? $abilities : $this->defaultAbilities;
+        $required = !empty($abilities) ? $abilities : $accessToken->abilities;
         foreach ($required as $ability) {
             if (!$accessToken->can($ability)) {
                 abort(403, 'Forbidden');

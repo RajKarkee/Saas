@@ -30,14 +30,20 @@ class AuthenticationController extends Controller
             'message' => 'Invalid email or password'
         ], 401);
     }
-    $token = $staff->createToken('staff_token', ['staff'])->plainTextToken;
+    $ability = match($staff->role) {
+        0 =>'manager',
+        1 => 'staff',
+        2 =>'delivery',
+        default => 'staff',
+    };
+    $token = $staff->createToken('staff_token', [$ability])->plainTextToken;
     $request->session()->put('staff_token', $token);
     $request->session()->put('staff_id', $staff->id);
     $request->session()->regenerate();
     $restaurant = Restaurant::find($staff->restaurant_id);
 $routeMatch = match($staff->role){
     0 => route('restaurant.staff.dashboard'), // Manager
-    1 => route('restaurant.staff.orders'),  // Chef1
+    1 => route('restaurant.staff.index'),  // Chef1
     2 => route('restaurant.delivery.index'), // Waiter
 };
         return response()->json([

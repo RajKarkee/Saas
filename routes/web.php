@@ -11,6 +11,12 @@ use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Restaurant\Staff\DeliveryController as RestaurantStaffDeliveryController;
+use App\Http\Controllers\LogoutController;
+
+
+// Route::get('/staff/dashboard/view', function () {
+//     return view('staff.layout.app');
+// })->name('restaurant.staff.dashboard');
 
 
 
@@ -109,15 +115,31 @@ Route::prefix('/users')->name('users.')->group(function(){
     Route::get('/index', [AdminUserController::class, 'userIndex'])->name('index');
 });
 });
-Route::prefix('restaurant')->middleware('staff.sanctum:staff')->name('restaurant.')->group(function(){
-   Route::prefix('delivery')->name('delivery.')->group(function(){
+Route::prefix('restaurant')->name('restaurant.')->group(function(){
+   Route::prefix('delivery')->middleware('staff.sanctum:delivery')->name('delivery.')->group(function(){
     Route::get('/index',[RestaurantStaffDeliveryController::class,'index'])->name('index');
+        Route::post('/logout',[LogoutController::class,'logout']
+    )->name('logout');  
    });
-    Route::post('/login',[RestaurantAuthController::class,'login'])->name('login');
-    Route::prefix('staff')->name('staff.')->group(function(){
+   Route::prefix('staff')->middleware('staff.sanctum:staff')->name('staff.')->group(function(){
    Route::get('/index',[RestaurantStaffController::class,'index'])->name('index');
-    Route::get('/create',[RestaurantStaffController::class,'create'])->name('create');
-    Route::post('/store', [RestaurantStaffController::class, 'store'])->name('store');
-    });
+   Route::post('/assign-delivery',[RestaurantStaffController::class,'assignDelivery'])->name('assign-delivery');
+   Route::post('/update-order-status',[RestaurantStaffController::class,'updateOrderStatus'])->name('update-order-status');
+   Route::match(['get','post'],'/setting',[RestaurantStaffController::class,'setting']
+    )->name('setting');
+    Route::get('/logout',[LogoutController::class,'logout']
+    )->name('logout');  
+   });  
+
+    Route::post('/login',[RestaurantAuthController::class,'login'])->name('login');
+//     Route::prefix('staff')->name('staff.')->group(function(){
+//    Route::get('/index',[RestaurantStaffController::class,'index'])->name('index');
+//     Route::get('/create',[RestaurantStaffController::class,'create'])->name('create');
+//     Route::post('/store', [RestaurantStaffController::class, 'store'])->name('store');
+//     });
 
 });
+    Route::post('/logout',[LogoutController::class,'logout']
+    )->name('logout');  
+   Route::get('/logoutPage',[LogoutController::class,'logoutPage']
+   )->name('logout.page');
