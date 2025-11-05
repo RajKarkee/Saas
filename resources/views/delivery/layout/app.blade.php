@@ -88,11 +88,88 @@
                 <h1 class="page-title">User Profile</h1>
                 <p class="page-subtitle">Manage your profile and account settings</p>
             </div>
+
             <div class="card-container">
-                <div class="empty-state">
-                    <i class="fas fa-user-circle"></i>
-                    <h3>Profile Settings</h3>
-                    <p>Update your personal information and preferences</p>
+                <div class="card p-4">
+                    <form action="/delivery/profile" method="POST" enctype="multipart/form-data" id="profileForm">
+                        @csrf
+                        <input type="hidden" name="remove_photo" id="removePhotoInput" value="0">
+                        <div class="row g-3">
+                            <div class="col-md-4 text-center">
+                                <div class="mb-3">
+                                    @php
+                                        // Prefer staff photo from staff_photos table, fallback to staff->photo or a placeholder
+                                        $photoUrl = null;
+                                        if (!empty($staffPhotos->path ?? null)) {
+                                            $photoUrl = Storage::url($staffPhotos->path);
+                                        } elseif (!empty($staff->photo ?? null)) {
+                                            $photoUrl = Storage::url($staff->photo);
+                                        } else {
+                                            $photoUrl = asset('images/default-avatar.png');
+                                        }
+                                    @endphp
+
+                                    <div class="profile-preview" style="width:160px;margin:0 auto">
+                                        <img id="profilePreviewImg" src="{{ $photoUrl }}" alt="profile"
+                                            style="width:160px;height:160px;object-fit:cover;border-radius:12px;border:1px solid rgba(15,23,42,0.06)">
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="btn btn-outline-secondary btn-sm">
+                                        Change photo
+                                        <input type="file" name="photo" id="photoInput" accept="image/*"
+                                            style="display:none">
+                                    </label>
+                                    <button type="button" id="removePhotoBtn"
+                                        class="btn btn-link btn-sm text-danger">Remove</button>
+                                </div>
+                                <p class="muted small">PNG, JPG up to 2MB</p>
+                            </div>
+
+                            <div class="col-md-8">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Full name</label>
+                                        <input name="name" type="text" class="form-control"
+                                            value="{{ old('name', $staff->name ?? '') }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Email</label>
+                                        <input name="email" type="email" class="form-control"
+                                            value="{{ old('email', $staff->email ?? '') }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Phone</label>
+                                        <input name="phone" type="text" class="form-control"
+                                            value="{{ old('phone', $staff->phone ?? '') }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Role</label>
+                                        <input type="text" class="form-control"
+                                            value="{{ ucfirst($staff->role ?? 'staff') }}" readonly>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label">Bio / Notes</label>
+                                        <textarea name="bio" class="form-control" rows="3">{{ old('bio', $staff->bio ?? '') }}</textarea>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Password (leave blank to keep)</label>
+                                        <input name="password" type="password" class="form-control">
+                                    </div>
+
+                                    <div class="col-md-6 d-flex align-items-end justify-content-end">
+                                        <div>
+                                            <button type="submit" class="btn btn-primary">Save changes</button>
+                                            <a href="#" class="btn btn-outline-secondary ms-2"
+                                                id="cancelProfile">Cancel</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -473,6 +550,75 @@
                 showNotification(`${newTheme === 'dark' ? 'Dark' : 'Light'} mode activated`, 'success');
             });
         }
+
+        // Profile image preview + form helpers
+        (function() {
+            const photoInput = document.getElementById('photoInput');
+            const previewImg = document.getElementById('profilePreviewImg');
+            const removeBtn = document.getElementById('removePhotoBtn');
+            const removeInput = document.getElementById('removePhotoInput');
+            const cancelBtn = document.getElementById('cancelProfile');
+            const form = document.getElementById('profileForm');
+
+            // store original values so Cancel restores them
+            const original = {};
+            if (form) {
+                original.name = form.querySelector('input[name="name"]')?.value || '';
+                original.email = form.querySelector('input[name="email"]')?.value || '';
+                original.phone = form.querySelector('input[name="phone"]')?.value || '';
+                original.bio = form.querySelector('textarea[name="bio"]')?.value || '';
+                original.preview = previewImg ? previewImg.src : '';
+            }
+
+            if (photoInput && previewImg) {
+                photoInput.addEventListener('change', (e) => {
+                    const file = e.target.files && e.target.files[0];
+                    if (!file) return;
+                    if (!file.type.startsWith('image/')) {
+                        showNotification('Please select a valid image file', 'error');
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        previewImg.src = ev.target.result;
+                        if (removeInput) removeInput.value = '0';
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            if (removeBtn && previewImg) {
+                removeBtn.addEventListener('click', () => {
+                    // set to placeholder and mark remove flag
+                    previewImg.src = '{{ asset('images/default-avatar.png') }}';
+                    if (photoInput) photoInput.value = '';
+                    if (removeInput) removeInput.value = '1';
+                });
+            }
+
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    // restore original values
+                    try {
+                        if (form.querySelector('input[name="name"]')) form.querySelector('input[name="name"]')
+                            .value = original.name;
+                        if (form.querySelector('input[name="email"]')) form.querySelector('input[name="email"]')
+                            .value = original.email;
+                        if (form.querySelector('input[name="phone"]')) form.querySelector('input[name="phone"]')
+                            .value = original.phone;
+                        if (form.querySelector('textarea[name="bio"]')) form.querySelector(
+                            'textarea[name="bio"]').value = original.bio;
+                        if (previewImg) previewImg.src = original.preview;
+                        if (photoInput) photoInput.value = '';
+                        if (removeInput) removeInput.value = '0';
+                        showNotification('Changes reverted', 'success');
+                    } catch (err) {
+                        console.error('Failed to reset profile form', err);
+                    }
+                });
+            }
+        })();
     </script>
 
     @stack('scripts')

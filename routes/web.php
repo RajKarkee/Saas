@@ -21,7 +21,7 @@ use App\Http\Controllers\LogoutController;
 
 
 Route::get('/', function () {
-    return view('delivery.layout.app');
+    return view('landingpage');
 });
 Route::get('/dashboard', function () {
     return view('admin.layout.dashboard');
@@ -120,6 +120,8 @@ Route::prefix('restaurant')->name('restaurant.')->group(function(){
     Route::get('/index',[RestaurantStaffDeliveryController::class,'index'])->name('index');
         Route::post('/logout',[LogoutController::class,'logout']
     )->name('logout');  
+    Route::match(['get','post'],'/setting',[RestaurantStaffDeliveryController::class,'setting']
+    )->name('setting');
    });
    Route::prefix('staff')->middleware('staff.sanctum:staff')->name('staff.')->group(function(){
    Route::get('/index',[RestaurantStaffController::class,'index'])->name('index');
