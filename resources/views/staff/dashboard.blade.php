@@ -112,7 +112,8 @@
                         </thead>
                         <tbody>
                             @forelse($orders as $index => $order)
-                                <tr data-status="{{ $order->status }}">
+                                <tr data-status="{{ $order->status }}"
+                                    data-delivery-person-id="{{ $order->delivery_person_id ?? '' }}">
                                     <td>{{ $index + 1 }}</td>
                                     <td><strong>#{{ $order->id }}</strong></td>
                                     <td>
@@ -226,8 +227,8 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             @if (isset($person->photo_url) && $person->photo_url)
-                                                <img src="{{ asset($person->photo_url) }}" alt="{{ $person->name }}"
-                                                    class="rounded-circle me-2"
+                                                <img src="{{ asset('storage/' . $person->photo_url) }}"
+                                                    alt="{{ $person->name }}" class="rounded-circle me-2"
                                                     style="width: 32px; height: 32px; object-fit: cover;">
                                             @else
                                                 <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-2"
@@ -584,15 +585,14 @@
             showOrders();
             showToast('Filtering orders for ' + personName, 'success');
 
-            // Filter orders table to show only this delivery person's orders
+            // Select all order rows
             const rows = document.querySelectorAll('#ordersTable tbody tr[data-status]');
             let visibleCount = 0;
 
             rows.forEach(row => {
-                const deliveryPersonCell = row.cells[6]; // 7th column (Delivery Person)
-                const hasThisPerson = deliveryPersonCell && deliveryPersonCell.textContent.includes(personName);
+                const deliveryId = row.getAttribute('data-delivery-person-id');
 
-                if (hasThisPerson) {
+                if (deliveryId == personId) {
                     row.style.display = '';
                     visibleCount++;
                 } else {
@@ -604,11 +604,12 @@
                 showToast('No orders found for ' + personName, 'warning');
             }
 
-            // Reset filter buttons
+            // Reset active filter buttons
             document.querySelectorAll('.btn-group button').forEach(btn => {
                 btn.classList.remove('active');
             });
         }
+
 
 
         function contactDeliveryPerson(phone, email) {

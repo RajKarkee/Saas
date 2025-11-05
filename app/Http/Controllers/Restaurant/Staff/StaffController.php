@@ -28,8 +28,10 @@ class StaffController extends Controller
         
       
         $delivery = DB::table('staff')
+            ->leftJoin('staff_photos', 'staff.id', '=', 'staff_photos.staff_id')
             ->where('restaurant_id', $staff->restaurant_id)
             ->where('role', 2)
+            ->select('staff.*','staff_photos.photo_url as photo_url')
             ->get();
         
        
