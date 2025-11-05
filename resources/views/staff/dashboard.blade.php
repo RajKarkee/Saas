@@ -512,8 +512,9 @@
         }
 
         function viewOrder(orderId) {
-
-            window.location.href = '/restaurant/orders/' + orderId;
+            let url = '{{ route('restaurant.staff.order.view', ['id' => ':id']) }}';
+            url = url.replace(':id', orderId);
+            window.location.href = url;
         }
 
         function filterOrders(status) {

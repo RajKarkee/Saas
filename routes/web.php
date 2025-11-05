@@ -128,7 +128,8 @@ Route::prefix('restaurant')->name('restaurant.')->group(function(){
    Route::match(['get','post'],'/setting',[RestaurantStaffController::class,'setting']
     )->name('setting');
     Route::get('/logout',[LogoutController::class,'logout']
-    )->name('logout');  
+    )->name('logout'); 
+    Route::get('/order-view/{id}',[RestaurantStaffController::class,'orderView'])->name('order.view');
    });  
 
     Route::post('/login',[RestaurantAuthController::class,'login'])->name('login');

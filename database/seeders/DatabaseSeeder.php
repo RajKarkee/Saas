@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use Database\Seeders\UsersTableSeeder;
+use Database\Seeders\RestaurantOrderSeeder;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,11 +15,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Seed users, restaurants, menu items and orders
+        $this->call([
+            UsersTableSeeder::class,
+            RestaurantOrderSeeder::class,
         ]);
     }
 }
