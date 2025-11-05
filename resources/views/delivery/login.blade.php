@@ -426,7 +426,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Password toggle
+
             $('#togglePassword').click(function() {
                 const passwordInput = $('#password');
                 const icon = $(this);
@@ -440,7 +440,7 @@
                 }
             });
 
-            // Clear previous validation errors
+
             function clearErrors() {
                 $('.invalid-feedback').hide().text('');
                 $('.form-control').removeClass('is-invalid');
