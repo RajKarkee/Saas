@@ -170,13 +170,13 @@
                     <input type="text" class="form-control" id="restaurant_domain" required>
                     <small id="restaurant_domain_error" class="text-danger"></small>
                     <small class="text-muted" id="domain_help" style="display:block;margin-top:4px;">Enter your custom
-                        domain (optional)</small>
+                        domain </small>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">SubDomain</label>
                     <input type="text" class="form-control" id="restaurantSubDomain" required>
                     <small class="text-muted" id="subdomain_preview" style="display:block;margin-top:4px;">Preview:
-                        <span id="subdomainPreviewValue">sub.yourdomain.com</span></small>
+                        <span id="subdomainPreviewValue">sub.yourdomain.com(optional)/span></small>
                 </div>
             </div>
 
