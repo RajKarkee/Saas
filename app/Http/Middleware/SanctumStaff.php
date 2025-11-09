@@ -26,13 +26,21 @@ class SanctumStaff
             abort(404, 'Page not found');
         }
 
-        $staff=$accessToken->tokenable;
+        $staff = $accessToken->tokenable;
+        
+        // Verify the session staff_id matches the token's staff
+        $sessionStaffId = $request->session()->get('staff_id');
+        if ($sessionStaffId != $staff->id) {
+            // Session mismatch - clear session and deny access
+            $request->session()->flush();
+            abort(403, 'Session expired. Please login again.');
+        }
 
         // Optional ability check using provided abilities or defaults
         $required = !empty($abilities) ? $abilities : $accessToken->abilities;
         foreach ($required as $ability) {
             if (!$accessToken->can($ability)) {
-                abort(403, 'Forbidden');
+                abort(403, 'Forbidden - You do not have access to this section.');
             }
         }
 

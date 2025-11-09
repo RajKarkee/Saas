@@ -16,6 +16,7 @@ use App\Models\Menu_Category;
 use App\Models\Menu_Item;
 use App\Models\Menu_item_addon;
 use App\Models\Menu_item_image;
+use App\Models\Restaurant_Schedule_table;
 
 
 
@@ -90,6 +91,62 @@ class RestaurantController extends Controller
         $restaurant->save();
 
         return redirect()->back()->with('success', 'Restaurant details saved successfully.');
+    }
+    /**
+     * Update weekly schedules for the restaurant.
+     * Expects arrays: day_of_week[], opening_time[], closing_time[], is_open[]
+     */
+    public function updateSchedules(Request $request)
+    {
+        $adminId = $request->session()->get('admin_id');
+        if (!$adminId) {
+            abort(403, 'Admin session missing.');
+        }
+        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+        $days = $request->input('day_of_week', []);
+        $opening = $request->input('opening_time', []);
+        $closing = $request->input('closing_time', []);
+        $openFlags = $request->input('is_open', []); // checkbox values
+
+        $validDays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+        $messages = [];
+
+        foreach ($validDays as $idx => $day) {
+            $o = $opening[$idx] ?? null;
+            $c = $closing[$idx] ?? null;
+            $isOpen = isset($openFlags[$idx]);
+
+            // Basic validation: if marked open, need both times
+            if ($isOpen && (!$o || !$c)) {
+                $messages[] = "$day missing times";
+                continue;
+            }
+            if ($isOpen && $o && $c && $o >= $c) {
+                $messages[] = "$day closing must be after opening";
+                continue;
+            }
+
+            $record = $restaurant->schedules()->where('day_of_week', $day)->first();
+            if (!$record) {
+                $record = $restaurant->schedules()->create([
+                    'day_of_week' => $day,
+                    'opening_time' => $o ?: '09:00:00',
+                    'closing_time' => $c ?: '17:00:00',
+                    'is_open' => $isOpen,
+                ]);
+            } else {
+                $record->opening_time = $o ?: $record->opening_time;
+                $record->closing_time = $c ?: $record->closing_time;
+                $record->is_open = $isOpen;
+                $record->save();
+            }
+        }
+
+        if (!empty($messages)) {
+            return redirect()->back()->with('error', 'Some schedule rows skipped: ' . implode(', ', $messages));
+        }
+        return redirect()->back()->with('success', 'Schedules updated successfully.');
     }
     public function settings(Request $request)
     {

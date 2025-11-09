@@ -12,7 +12,7 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Restaurant\Staff\DeliveryController as RestaurantStaffDeliveryController;
 use App\Http\Controllers\LogoutController;
-
+use App\Http\Controllers\Landing\AuthenticationController as LandingAuthenticationController;
 
 // Route::get('/staff/dashboard/view', function () {
 //     return view('staff.layout.app');
@@ -23,6 +23,17 @@ use App\Http\Controllers\LogoutController;
 Route::get('/', function () {
     return view('landingpage');
 });
+Route::get('/check-unique', [LandingAuthenticationController::class, 'checkUnique'])->name('check.unique');
+Route::post('/check-domain', [LandingAuthenticationController::class, 'checkDomain'])->name('check.domain');
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('landingPage.login');
+Route::get('/signup', function () {
+    return view('auth.signup');
+})->name('landingPage.signup');
+// Final combined create endpoint for admin + restaurant (two-step signup)
+Route::post('/user/admin/create', [LandingAuthenticationController::class, 'register'])->name('user.admin.create');
+// Route::post('/signup', [Super_AdminRestaurantController::class, 'registerRestaurant'])->name('restaurant.signup.store');
 Route::get('/dashboard', function () {
     return view('admin.layout.dashboard');
 })->name('dashboard');
@@ -71,6 +82,8 @@ Route::prefix('admin')->middleware(['admin.sanctum:admin'])->name('admin.')->gro
     Route::put('/update', [AdminRestaurantController::class, 'update'])->name('update');
     Route::match(['get','post','put'],'/settings',[AdminRestaurantController::class,'settings']
     )->name('settings');
+    // Restaurant schedules
+    Route::post('/schedules/update', [AdminRestaurantController::class, 'updateSchedules'])->name('schedules.update');
     Route::prefix('/staff')->name('staff.')->group(function(){
     Route::get('/index', [AdminRestaurantController::class, 'staffIndex'])->name('index');
     Route::get('/create', [AdminRestaurantController::class, 'staffCreate'])->name('create');
@@ -122,6 +135,10 @@ Route::prefix('restaurant')->name('restaurant.')->group(function(){
     )->name('logout');  
     Route::match(['get','post'],'/setting',[RestaurantStaffDeliveryController::class,'setting']
     )->name('setting');
+    Route::post('/start/{id}',[RestaurantStaffDeliveryController::class,'startDelivery'])->name('start');
+    Route::get('/ongoing',[RestaurantStaffDeliveryController::class,'ongoingDeliveries'])->name('ongoing');
+    Route::match(['get','put'],'/profile',[RestaurantStaffDeliveryController::class,'profile']
+    )->name('profile');
    });
    Route::prefix('staff')->middleware('staff.sanctum:staff')->name('staff.')->group(function(){
    Route::get('/index',[RestaurantStaffController::class,'index'])->name('index');

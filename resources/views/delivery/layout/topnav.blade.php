@@ -8,7 +8,18 @@
                <i class="fas fa-search"></i>
            </div> --}}
        </div>
-
+       <?php
+       
+       $staffId = session('staff_id') ?? session('staffId');
+       $staff = null;
+       $staffPhotos = null;
+       if ($staffId) {
+           $staff = DB::table('staff')->where('id', $staffId)->first();
+           if ($staff) {
+               $staffPhotos = DB::table('staff_photos')->where('staff_id', $staffId)->first();
+           }
+       }
+       ?>
        <div class="nav-right">
            <button class="theme-toggle" id="themeToggle">
                <i class="fas fa-sun sun-icon"></i>
@@ -25,7 +36,7 @@
            <div class="user-profile" id="userProfile">
                <div class="user-avatar">
                    @if (!empty($staffPhotos) && !empty($staffPhotos->photo_url))
-                       <img src="{{ asset($staffPhotos->photo_url) }}" alt="{{ $staff->name ?? 'Avatar' }}"
+                       <img src="{{ asset('storage/' . $staffPhotos->photo_url) }}" alt="{{ $staff->name ?? 'Avatar' }}"
                            class="avatar-img" />
                    @elseif(!empty($staff) && !empty($staff->name))
                        {{-- show initials if no photo --}}
@@ -42,7 +53,7 @@
                    @endif
                </div>
                <div class="user-info">
-                   <div class="user-name">{{ $staff->name }}</div>
+                   <div class="user-name">{{ $staff->name ?? 'Delivery Driver' }}</div>
                    <div class="user-role">Delivery Driver</div>
                </div>
                <i class="fas fa-chevron-down"></i>
@@ -50,7 +61,7 @@
                <!-- Profile Dropdown -->
                <div class="profile-dropdown">
                    <div class="dropdown-header">
-                       <div class="user-name">{{ $staff->name }}</div>
+                       <div class="user-name">{{ $staff->name ?? 'Delivery Driver' }}</div>
                        <div class="user-role">Delivery Driver</div>
                    </div>
                    <div class="dropdown-menu-list">

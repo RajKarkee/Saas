@@ -15,6 +15,51 @@ use Illuminate\Support\Facades\Hash;
 
 class RestaurantController extends Controller
 {
+    /**
+     * Public restaurant registration (signup page)
+     */
+    public function registerRestaurant(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:restaurants,email',
+            'domain' => 'required|string|max:255|unique:restaurants,domain',
+            'subdomain' => 'nullable|string|max:255|unique:restaurants,subdomain',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Create restaurant
+            $restaurant = Restaurant::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'domain' => $request->domain,
+                'subdomain' => $request->subdomain,
+                'password' => Hash::make($request->password),
+                'status' => 'pending', // Pending approval by super admin
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('landingPage.login')
+                ->with('success', 'Restaurant registered successfully! Your account is pending approval. You will be notified via email once approved.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->with('error', 'Registration failed. Please try again.')
+                ->withInput();
+        }
+    }
+
     public function index()
     {
         if(request()->isMethod('get')){

@@ -30,6 +30,17 @@ class AuthenticationController extends Controller
             'message' => 'Invalid email or password'
         ], 401);
     }
+    
+    // Clear any existing staff session to prevent conflicts
+    // This ensures only one staff member can be logged in per browser
+    $oldToken = $request->session()->get('staff_token');
+    if ($oldToken) {
+        $oldAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($oldToken);
+        if ($oldAccessToken) {
+            $oldAccessToken->delete();
+        }
+    }
+    
     $ability = match($staff->role) {
         0 =>'manager',
         1 => 'staff',
@@ -37,9 +48,15 @@ class AuthenticationController extends Controller
         default => 'staff',
     };
     $token = $staff->createToken('staff_token', [$ability])->plainTextToken;
+    
+    // Regenerate session for security
+    $request->session()->regenerate();
+    
+    // Set new session values
     $request->session()->put('staff_token', $token);
     $request->session()->put('staff_id', $staff->id);
-    $request->session()->regenerate();
+    $request->session()->put('staff_role', $staff->role);
+    
     $restaurant = Restaurant::find($staff->restaurant_id);
 $routeMatch = match($staff->role){
     0 => route('restaurant.staff.dashboard'), // Manager

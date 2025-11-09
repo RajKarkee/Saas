@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\Restaurant;
+use App\Models\Restaurant_schedules_table;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -30,11 +31,18 @@ class DashboardController extends Controller
             return $restaurant->staff->count();
         });
 
+        // Preload schedules for current restaurant for the schedule form
+        $schedules = collect();
+        if ($currentRestaurant) {
+            $schedules = Restaurant_schedules_table::where('restaurant_id', $currentRestaurant->id)->get();
+        }
+
         return view('restaurant.dashboard', [
             'admin' => $admin,
             'restaurants' => $restaurants,
             'currentRestaurant' => $currentRestaurant,
             'totalStaff' => $totalStaff,
+            'schedules' => $schedules,
         ]);
     }
 }

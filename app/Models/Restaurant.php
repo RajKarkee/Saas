@@ -48,4 +48,16 @@ class Restaurant extends Model
     {
         return $this->hasManyThrough(Menu_item_addon::class, Menu_item::class, 'restaurant_id', 'menu_item_id', 'id', 'id');
     }
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+    public function flags()
+    {
+        return $this->hasOne(RestaurantFlag::class);
+    }
+    public function schedules()
+    {
+        return $this->hasOne(Restaurant_schedules_table::class);
+    }
 }

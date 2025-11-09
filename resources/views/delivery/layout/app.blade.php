@@ -3,537 +3,523 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Delivery Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href='{{ asset('css/delivery/index.css') }}'>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #6366f1;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --body-bg: #f8fafc;
+            --card-bg: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+            --body-bg: #0f172a;
+            --card-bg: #1e293b;
+        }
+
+        [data-theme="dark"] .mobile-header {
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="dark"] .bottom-nav {
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="dark"] .card-container {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        [data-theme="dark"] .table-hover tbody tr:hover {
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--body-bg);
+            padding-bottom: 80px;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Mobile Top Header */
+        .mobile-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--card-bg);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .header-left p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .header-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: var(--body-bg);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 18px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .header-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .header-btn:active {
+            transform: scale(0.95);
+        }
+
+        .theme-toggle-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: var(--body-bg);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle-btn:hover {
+            transform: rotate(180deg);
+        }
+
+        .theme-toggle-btn:active {
+            transform: scale(0.9);
+        }
+
+        [data-theme="dark"] .theme-toggle-btn .sun-icon {
+            display: block;
+        }
+
+        [data-theme="dark"] .theme-toggle-btn .moon-icon {
+            display: none;
+        }
+
+        [data-theme="light"] .theme-toggle-btn .sun-icon {
+            display: none;
+        }
+
+        [data-theme="light"] .theme-toggle-btn .moon-icon {
+            display: block;
+        }
+
+        .header-btn .badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 18px;
+            height: 18px;
+            background: var(--danger-color);
+            border-radius: 50%;
+            font-size: 10px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            border: 2px solid var(--border-color);
+            transition: border-color 0.3s ease;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 0;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .content-section {
+            display: none;
+            padding: 20px;
+            min-height: calc(100vh - 160px);
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 20px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Cards */
+        .card-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        /* Table Responsive */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table {
+            font-size: 13px;
+            margin-bottom: 0;
+            color: var(--text-primary);
+        }
+
+        /* Mobile-friendly stacked table: hide the header and show rows as cards */
+        @media (max-width: 767px) {
+            .table {
+                border: 0;
+            }
+
+            .table thead {
+                display: none;
+            }
+
+            .table tbody tr {
+                display: block;
+                background: var(--card-bg);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                padding: 10px;
+                margin-bottom: 12px;
+            }
+
+            .table tbody td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 6px;
+                white-space: normal;
+                border-bottom: none;
+            }
+
+            .table tbody td::before {
+                content: attr(data-label);
+                font-weight: 700;
+                color: var(--text-secondary);
+                margin-right: 8px;
+                flex: 0 0 auto;
+            }
+
+            .table tbody td .btn {
+                margin-left: 6px;
+            }
+
+            .table-responsive {
+                padding-left: 6px;
+                padding-right: 6px;
+            }
+        }
+
+        .table th {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+            padding: 12px 8px;
+            background: var(--body-bg);
+        }
+
+        .table td {
+            padding: 12px 8px;
+            vertical-align: middle;
+            white-space: nowrap;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: var(--body-bg);
+        }
+
+        .badge-status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 12px;
+            margin: 2px;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 12px 0;
+            z-index: 1000;
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 32px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 0 0 3px 3px;
+        }
+
+        .nav-item i {
+            font-size: 22px;
+        }
+
+        .nav-item span {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* Profile Form Mobile Optimized */
+        .profile-preview {
+            margin: 20px auto !important;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .form-control,
+        .form-select {
+            font-size: 14px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: #cbd5e1;
+            margin-bottom: 12px;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .empty-state p {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        /* Desktop */
+        @media (min-width: 768px) {
+            body {
+                padding-bottom: 0;
+            }
+
+            .mobile-header {
+                display: none;
+            }
+
+            .bottom-nav {
+                display: none;
+            }
+
+            .main-content {
+                max-width: 1200px;
+                padding: 20px;
+            }
+
+            .content-section {
+                padding: 30px;
+            }
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    </style>
 
 </head>
 
 <body>
-    <!-- Sidebar -->
-    @include('delivery.layout.sidebar')
+    <!-- Mobile Header -->
+    @include('delivery.layout.mobile-header')
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
-        <!-- Top Navigation -->
 
-        @include('delivery.layout.topnav')
-        <!-- Dashboard Section -->
-        @include('delivery.dashboard')
-
-        <!-- Deliveries Section -->
-        <div class="content-container content-section" id="deliveries">
-            <div class="page-header">
-                <h1 class="page-title">All Deliveries</h1>
-                <p class="page-subtitle">Manage and track all your delivery orders</p>
-            </div>
-            <div class="card-container">
-                <div class="empty-state">
-                    <i class="fas fa-box-open"></i>
-                    <h3>Deliveries Management</h3>
-                    <p>View and manage all your deliveries in one place</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Routes Section -->
-        <div class="content-container content-section" id="routes">
-            <div class="page-header">
-                <h1 class="page-title">Delivery Routes</h1>
-                <p class="page-subtitle">Optimize your delivery routes for efficiency</p>
-            </div>
-            <div class="card-container">
-                <div class="empty-state">
-                    <i class="fas fa-route"></i>
-                    <h3>Route Planning</h3>
-                    <p>Plan and optimize your delivery routes</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Earnings Section -->
-        {{-- <div class="content-container content-section" id="earnings">
-            <div class="page-header">
-                <h1 class="page-title">Earnings</h1>
-                <p class="page-subtitle">Track your earnings and payment history</p>
-            </div>
-            <div class="card-container">
-                <div class="empty-state">
-                    <i class="fas fa-chart-line"></i>
-                    <h3>Earnings Overview</h3>
-                    <p>View your earnings statistics and payment details</p>
-                </div>
-            </div>
-        </div> --}}
-
-        <!-- History Section -->
-        <div class="content-container content-section" id="history">
-            <div class="page-header">
-                <h1 class="page-title">Delivery History</h1>
-                <p class="page-subtitle">Review your past deliveries and performance</p>
-            </div>
-            <div class="card-container">
-                <div class="empty-state">
-                    <i class="fas fa-history"></i>
-                    <h3>Past Deliveries</h3>
-                    <p>Review your completed deliveries and performance metrics</p>
-                </div>
-            </div>
-        </div>
-        <!-- Profile Section -->
-        <div class="content-container content-section" id="profile">
-            <div class="page-header">
-                <h1 class="page-title">User Profile</h1>
-                <p class="page-subtitle">Manage your profile and account settings</p>
-            </div>
-
-            <div class="card-container">
-                <div class="card p-4">
-                    <form action="/delivery/profile" method="POST" enctype="multipart/form-data" id="profileForm">
-                        @csrf
-                        <input type="hidden" name="remove_photo" id="removePhotoInput" value="0">
-                        <div class="row g-3">
-                            <div class="col-md-4 text-center">
-                                <div class="mb-3">
-                                    @php
-                                        // Prefer staff photo from staff_photos table, fallback to staff->photo or a placeholder
-                                        $photoUrl = null;
-                                        if (!empty($staffPhotos->path ?? null)) {
-                                            $photoUrl = Storage::url($staffPhotos->path);
-                                        } elseif (!empty($staff->photo ?? null)) {
-                                            $photoUrl = Storage::url($staff->photo);
-                                        } else {
-                                            $photoUrl = asset('images/default-avatar.png');
-                                        }
-                                    @endphp
-
-                                    <div class="profile-preview" style="width:160px;margin:0 auto">
-                                        <img id="profilePreviewImg" src="{{ $photoUrl }}" alt="profile"
-                                            style="width:160px;height:160px;object-fit:cover;border-radius:12px;border:1px solid rgba(15,23,42,0.06)">
-                                    </div>
-                                </div>
-                                <div class="mb-2">
-                                    <label class="btn btn-outline-secondary btn-sm">
-                                        Change photo
-                                        <input type="file" name="photo" id="photoInput" accept="image/*"
-                                            style="display:none">
-                                    </label>
-                                    <button type="button" id="removePhotoBtn"
-                                        class="btn btn-link btn-sm text-danger">Remove</button>
-                                </div>
-                                <p class="muted small">PNG, JPG up to 2MB</p>
-                            </div>
-
-                            <div class="col-md-8">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Full name</label>
-                                        <input name="name" type="text" class="form-control"
-                                            value="{{ old('name', $staff->name ?? '') }}">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Email</label>
-                                        <input name="email" type="email" class="form-control"
-                                            value="{{ old('email', $staff->email ?? '') }}">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Phone</label>
-                                        <input name="phone" type="text" class="form-control"
-                                            value="{{ old('phone', $staff->phone ?? '') }}">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Role</label>
-                                        <input type="text" class="form-control"
-                                            value="{{ ucfirst($staff->role ?? 'staff') }}" readonly>
-                                    </div>
-
-                                    <div class="col-12">
-                                        <label class="form-label">Bio / Notes</label>
-                                        <textarea name="bio" class="form-control" rows="3">{{ old('bio', $staff->bio ?? '') }}</textarea>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">Password (leave blank to keep)</label>
-                                        <input name="password" type="password" class="form-control">
-                                    </div>
-
-                                    <div class="col-md-6 d-flex align-items-end justify-content-end">
-                                        <div>
-                                            <button type="submit" class="btn btn-primary">Save changes</button>
-                                            <a href="#" class="btn btn-outline-secondary ms-2"
-                                                id="cancelProfile">Cancel</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Settings Section -->
-        <div class="content-container content-section" id="settings">
-            <div class="page-header">
-                <h1 class="page-title">Settings</h1>
-                <p class="page-subtitle">Configure your application preferences</p>
-            </div>
-            <div class="card-container">
-                <div class="empty-state">
-                    <i class="fas fa-cog"></i>
-                    <h3>Application Settings</h3>
-                    <p>Customize your experience and preferences</p>
-                </div>
-            </div>
-        </div>
 
         @yield('content')
     </div>
 
+    <!-- Bottom Navigation -->
+    @include('delivery.layout.bottom-nav')
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Sidebar Toggle
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        const toggleBtn = document.getElementById('toggleSidebar');
-
-        toggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-
-            // Close mobile sidebar on mobile
-            if (window.innerWidth <= 768) {
-                sidebar.classList.toggle('show');
-            }
-        });
-
-        // Profile Dropdown Toggle
-        const userProfile = document.getElementById('userProfile');
-
-        userProfile.addEventListener('click', (e) => {
-            e.stopPropagation();
-            userProfile.classList.toggle('active');
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!userProfile.contains(e.target)) {
-                userProfile.classList.remove('active');
-            }
-        });
-
-        // Handle dropdown navigation items
-        document.querySelectorAll('.dropdown-item[data-section]').forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                const section = item.getAttribute('data-section');
-
-                // Close dropdown
-                userProfile.classList.remove('active');
-
-                // Navigate to section
-                const targetLink = document.querySelector(`.nav-link[data-section="${section}"]`);
-                if (targetLink) {
-                    targetLink.click();
-                }
-            });
-        });
-
-        // Navigation
-        const navLinks = document.querySelectorAll('.nav-link[data-section]');
-        const contentSections = document.querySelectorAll('.content-section');
-
-        navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const targetSection = link.getAttribute('data-section');
-
-                // Update active nav link
-                navLinks.forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
-
-                // Show target section
-                contentSections.forEach(section => {
-                    section.classList.remove('active');
-                });
-
-                const targetElement = document.getElementById(targetSection);
-                if (targetElement) {
-                    targetElement.classList.add('active');
-                }
-
-                // Close mobile sidebar
-                if (window.innerWidth <= 768) {
-                    sidebar.classList.remove('show');
-                }
-            });
-        });
-
-        // Start Delivery
-        function startDelivery(btn) {
-            const item = btn.closest('.delivery-item');
-            const badge = item.querySelector('.status-badge');
-            badge.className = 'status-badge progress';
-            badge.textContent = 'In Progress';
-
-            const actions = item.querySelector('.delivery-actions');
-            actions.innerHTML = `
-                <button class="btn-action btn-outline-action">
-                    <i class="fas fa-map"></i> View Route
-                </button>
-                <button class="btn-action btn-success-action" onclick="completeDelivery(this)">
-                    <i class="fas fa-check"></i> Mark Complete
-                </button>
-            `;
-
-            // Update stats with null checks
-            const pendingCount = document.getElementById('pendingCount');
-            const progressCount = document.getElementById('progressCount');
-
-            if (pendingCount) {
-                pendingCount.textContent = Math.max(0, parseInt(pendingCount.textContent) - 1);
-            }
-            if (progressCount) {
-                progressCount.textContent = parseInt(progressCount.textContent) + 1;
-            }
-
-            showNotification('Delivery started successfully!', 'success');
-        }
-
-        function startDelivery(btn, orderId = null) {
-            // Support both card-list and table rows
-            let row = null;
-            if (btn) {
-                row = btn.closest('.delivery-item');
-            }
-            if (!row && btn) {
-                row = btn.closest('tr');
-            }
-
-            if (row) {
-                // card style
-                const badge = row.querySelector('.status-badge') || row.querySelector('.badge-status');
-                if (badge) {
-                    badge.className = 'status-badge progress';
-                    badge.textContent = 'In Progress';
-                }
-
-                const actions = row.querySelector('.delivery-actions') || row.querySelector('td:last-child');
-                if (actions) {
-                    actions.innerHTML = `
-                        <button class="btn-action btn-outline-action">
-                            <i class="fas fa-map"></i> View Route
-                        </button>
-                        <button class="btn-action btn-success-action" onclick="completeDelivery(this)">
-                            <i class="fas fa-check"></i> Mark Complete
-                        </button>
-                    `;
-                }
-            }
-
-            // Update stats with null checks
-            const pendingCount = document.getElementById('pendingCount');
-            const progressCount = document.getElementById('progressCount');
-
-            if (pendingCount) {
-                pendingCount.textContent = Math.max(0, parseInt(pendingCount.textContent) - 1);
-            }
-            if (progressCount) {
-                progressCount.textContent = parseInt(progressCount.textContent) + 1;
-            }
-
-            showNotification('Delivery started successfully!', 'success');
-        }
-
-        // Complete Delivery
-        function completeDelivery(btn) {
-            const item = btn.closest('.delivery-item');
-            const badge = item.querySelector('.status-badge');
-            badge.className = 'status-badge completed';
-            badge.textContent = 'Completed';
-
-            const actions = item.querySelector('.delivery-actions');
-            actions.innerHTML = `
-                <button class="btn-action btn-outline-action" disabled>
-                    <i class="fas fa-check-circle"></i> Completed
-                </button>
-            `;
-
-            // Update stats
-            const progressCount = document.getElementById('progressCount');
-            const completedCount = document.getElementById('completedCount');
-            const earningsEl = document.getElementById('earnings');
-
-            if (progressCount) {
-                progressCount.textContent = Math.max(0, parseInt(progressCount.textContent) - 1);
-            }
-            if (completedCount) {
-                completedCount.textContent = parseInt(completedCount.textContent) + 1;
-            }
-
-            // Add $25 to earnings (example)
-            if (earningsEl) {
-                const currentEarnings = parseInt(earningsEl.textContent.replace('$', ''));
-                earningsEl.textContent = '$' + (currentEarnings + 25);
-            }
-
-            showNotification('Delivery completed! +$25 earned', 'success');
-
-            // Remove item after animation
-            setTimeout(() => {
-                item.style.transition = 'all 0.3s ease';
-                item.style.opacity = '0';
-                item.style.transform = 'translateX(100%)';
-                setTimeout(() => item.remove(), 300);
-            }, 2000);
-        }
-
-        function completeDelivery(btn, orderId = null) {
-            let row = null;
-            if (btn) row = btn.closest('.delivery-item');
-            if (!row && btn) row = btn.closest('tr');
-
-            if (row) {
-                const badge = row.querySelector('.status-badge') || row.querySelector('.badge-status');
-                if (badge) {
-                    badge.className = 'status-badge completed';
-                    badge.textContent = 'Completed';
-                }
-
-                const actions = row.querySelector('.delivery-actions') || row.querySelector('td:last-child');
-                if (actions) {
-                    actions.innerHTML = `
-                        <button class="btn-action btn-outline-action" disabled>
-                            <i class="fas fa-check-circle"></i> Completed
-                        </button>
-                    `;
-                }
-
-                // If it's a table row, optionally remove or mark it
-                if (row.tagName === 'TR') {
-                    row.classList.add('table-success');
-                } else {
-                    // remove card after animation
-                    setTimeout(() => {
-                        row.style.transition = 'all 0.3s ease';
-                        row.style.opacity = '0';
-                        row.style.transform = 'translateX(100%)';
-                        setTimeout(() => row.remove(), 300);
-                    }, 800);
-                }
-            }
-
-            // Update stats with null checks
-            const progressCount = document.getElementById('progressCount');
-            const completedCount = document.getElementById('completedCount');
-            const earningsEl = document.getElementById('earnings');
-
-            if (progressCount) {
-                progressCount.textContent = Math.max(0, parseInt(progressCount.textContent) - 1);
-            }
-            if (completedCount) {
-                completedCount.textContent = parseInt(completedCount.textContent) + 1;
-            }
-
-            // Add $25 to earnings (example)
-            if (earningsEl) {
-                const currentEarnings = parseInt(earningsEl.textContent.replace('$', '')) || 0;
-                earningsEl.textContent = '$' + (currentEarnings + 25);
-            }
-
-            showNotification('Delivery completed! +$25 earned', 'success');
-        }
-
-        function viewOrder(orderId) {
-            if (!orderId) return;
-            // Redirect to a view page; adjust path if you have a named route
-            window.location.href = '/orders/' + orderId;
-        }
-
-        // Show Notification
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 80px;
-                right: 32px;
-                background: ${type === 'success' ? '#10b981' : '#ef4444'};
-                color: white;
-                padding: 16px 24px;
-                border-radius: 12px;
-                box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-                z-index: 10000;
-                animation: slideIn 0.3s ease;
-                font-weight: 600;
-            `;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }
-
-        // Logout
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                showNotification('Logging out...', 'success');
-                setTimeout(() => {
-                    window.location.href = '/login';
-                }, 1500);
-            }
-        }
-
-        // Add animation styles
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from {
-                    transform: translateX(400px);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-            @keyframes slideOut {
-                from {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-                to {
-                    transform: translateX(400px);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-
-        // Filter Tabs
-        const filterTabs = document.querySelectorAll('.filter-tab');
-        filterTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                filterTabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                // Add filter logic here
-            });
-        });
-
-        // Real-time clock (optional)
-        function updateClock() {
-            const now = new Date();
-            const time = now.toLocaleTimeString();
-            // You can display this somewhere if needed
-        }
-        setInterval(updateClock, 1000);
-
-        // Theme Toggle
+        < script src = "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js" >
+    </script>
+    <script>
+        // Theme Toggle Functionality
         const themeToggle = document.getElementById('themeToggle');
-        const savedTheme = localStorage.getItem('theme') || 'light';
+        const savedTheme = localStorage.getItem('deliveryTheme') || 'light';
 
         // Apply saved theme on page load
         document.documentElement.setAttribute('data-theme', savedTheme);
@@ -545,10 +531,108 @@
                 const newTheme = currentTheme === 'light' ? 'dark' : 'light';
 
                 document.documentElement.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
+                localStorage.setItem('deliveryTheme', newTheme);
 
+                // Optional: Show notification
                 showNotification(`${newTheme === 'dark' ? 'Dark' : 'Light'} mode activated`, 'success');
             });
+        }
+
+        // Section titles for mobile header
+        const sectionTitles = {
+            dashboard: {
+                title: 'Dashboard',
+                subtitle: 'Track your deliveries'
+            },
+            deliveries: {
+                title: 'All Deliveries',
+                subtitle: 'Manage your orders'
+            },
+            routes: {
+                title: 'Routes',
+                subtitle: 'Optimize your path'
+            },
+            history: {
+                title: 'History',
+                subtitle: 'Past deliveries'
+            },
+            profile: {
+                title: 'Profile',
+                subtitle: 'Manage your account'
+            },
+            settings: {
+                title: 'Settings',
+                subtitle: 'App preferences'
+            }
+        };
+
+
+        // const navItems = document.querySelectorAll('.nav-item[data-section]');
+        // const contentSections = document.querySelectorAll('.content-section');
+        // const headerTitle = document.getElementById('headerTitle');
+        // const headerSubtitle = document.getElementById('headerSubtitle');
+
+
+        // Complete Delivery
+        function completeDelivery(btn, orderId = null) {
+            let row = null;
+            if (btn) row = btn.closest('.delivery-item');
+            if (!row && btn) row = btn.closest('tr');
+
+            if (row) {
+                const badge = row.querySelector('.status-badge') || row.querySelector('.badge-status');
+                if (badge) {
+                    badge.className = 'badge badge-status bg-success text-white';
+                    badge.textContent = 'Completed';
+                }
+
+                const actions = row.querySelector('.delivery-actions') || row.querySelector('td:last-child');
+                if (actions) {
+                    actions.innerHTML =
+                        '<button class="btn btn-sm btn-secondary" disabled><i class="fas fa-check-circle"></i></button>';
+                }
+
+                // If it's a table row, mark it
+                if (row.tagName === 'TR') {
+                    row.classList.add('table-success');
+                }
+            }
+
+            showNotification('Delivery completed successfully!', 'success');
+        }
+
+        function viewOrder(orderId) {
+            if (!orderId) return;
+            window.location.href = '/orders/' + orderId;
+        }
+
+        // Show Notification
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${type === 'success' ? '#10b981' : '#ef4444'};
+                color: white;
+                padding: 12px 24px;
+                border-radius: 12px;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+                font-weight: 600;
+                font-size: 14px;
+                max-width: 90%;
+                text-align: center;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
         }
 
         // Profile image preview + form helpers
@@ -589,7 +673,6 @@
 
             if (removeBtn && previewImg) {
                 removeBtn.addEventListener('click', () => {
-                    // set to placeholder and mark remove flag
                     previewImg.src = '{{ asset('images/default-avatar.png') }}';
                     if (photoInput) photoInput.value = '';
                     if (removeInput) removeInput.value = '1';
@@ -599,7 +682,6 @@
             if (cancelBtn) {
                 cancelBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    // restore original values
                     try {
                         if (form.querySelector('input[name="name"]')) form.querySelector('input[name="name"]')
                             .value = original.name;

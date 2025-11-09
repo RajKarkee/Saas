@@ -127,9 +127,10 @@
                     <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
                     <li class="nav-item"><a class="nav-link" href="#pricing">Pricing</a></li>
                     <li class="nav-item"><a class="nav-link" href="#faq">FAQ</a></li>
-                    <li class="nav-item ms-3 d-none d-lg-block"><a href="/login"
+                    <li class="nav-item ms-3 d-none d-lg-block"><a href="{{ route('landingPage.login') }}"
                             class="btn btn-outline-secondary btn-sm">Login</a></li>
-                    <li class="nav-item ms-2 d-none d-lg-block"><a href="/register" class="btn btn-primary btn-sm">Get
+                    <li class="nav-item ms-2 d-none d-lg-block"><a href="{{ route('landingPage.signup') }}"
+                            class="btn btn-primary btn-sm">Get
                             Started</a></li>
                 </ul>
             </div>
@@ -144,8 +145,8 @@
                     <p class="muted mt-3 hero-sub">Manage orders, staff, menus and deliveries from one beautiful
                         interface — built for speed, clarity and scale.</p>
                     <div class="mt-4 d-flex gap-3 hero-ctas">
-                        <a class="cta d-inline-flex align-items-center gap-2" href="/register"><i
-                                class="fas fa-rocket"></i> Start free trial</a>
+                        <a class="cta d-inline-flex align-items-center gap-2"
+                            href="{{ route('landingPage.signup') }}"><i class="fas fa-rocket"></i> Start free trial</a>
                         <a class="btn btn-outline-secondary d-inline-flex align-items-center gap-2" href="#features"><i
                                 class="fas fa-eye"></i> See features</a>
                     </div>
@@ -247,7 +248,8 @@
                             <li>✔️ Single location</li>
                             <li>✔️ Community support</li>
                         </ul>
-                        <a href="/register" class="btn btn-outline-secondary w-100">Start Free</a>
+                        <a href="{{ route('landingPage.signup') }}" class="btn btn-outline-secondary w-100">Start
+                            Free</a>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -260,7 +262,7 @@
                             <li>✔️ Staff roles & permissions</li>
                             <li>✔️ Priority support</li>
                         </ul>
-                        <a href="/register" class="btn btn-primary w-100">Start Free Trial</a>
+                        <a href="{{ route('landingPage.signup') }}" class="btn btn-primary w-100">Start Free Trial</a>
                     </div>
                 </div>
             </div>

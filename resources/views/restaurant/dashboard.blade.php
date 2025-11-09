@@ -171,6 +171,101 @@
                     </div>
                 </div>
             </div>
+            <div class="col-12 col-xl-8 mt-4">
+                <div class="card shadow-sm">
+                    <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-1">Weekly Schedule</h5>
+                            <p class="text-muted small mb-0">Set opening and closing times for each day.</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        @php
+                            $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                            $scheduleMap = [];
+                            if (isset($currentRestaurant)) {
+                                $records = \App\Models\Restaurant_schedules_table::where(
+                                    'restaurant_id',
+                                    optional($currentRestaurant)->id,
+                                )->get();
+                                foreach ($records as $rec) {
+                                    $scheduleMap[$rec->day_of_week] = $rec;
+                                }
+                            }
+                        @endphp
+                        <form method="POST" action="{{ route('admin.restaurant.schedules.update') }}"
+                            class="table-responsive">
+                            @csrf
+                            <table class="table align-middle mb-3">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width:140px;">Day</th>
+                                        <th style="width:180px;">Opening</th>
+                                        <th style="width:180px;">Closing</th>
+                                        <th style="width:100px;">Open?</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($days as $index => $day)
+                                        @php $rec = $scheduleMap[$day] ?? null; @endphp
+                                        <tr>
+                                            <td class="fw-semibold">{{ $day }}<input type="hidden"
+                                                    name="day_of_week[]" value="{{ $day }}" /></td>
+                                            <td>
+                                                <input type="time" class="form-control form-control-sm"
+                                                    name="opening_time[]" value="{{ $rec?->opening_time ?? '09:00' }}"
+                                                    {{ $rec && !$rec->is_open ? 'disabled' : '' }}>
+                                            </td>
+                                            <td>
+                                                <input type="time" class="form-control form-control-sm"
+                                                    name="closing_time[]" value="{{ $rec?->closing_time ?? '17:00' }}"
+                                                    {{ $rec && !$rec->is_open ? 'disabled' : '' }}>
+                                            </td>
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input schedule-open-toggle" type="checkbox"
+                                                        role="switch" name="is_open[{{ $index }}]"
+                                                        data-row-index="{{ $index }}"
+                                                        {{ $rec?->is_open ?? true ? 'checked' : '' }}>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-save me-1"></i> Update Schedule
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggles = document.querySelectorAll('.schedule-open-toggle');
+            toggles.forEach(function(t, i) {
+                t.addEventListener('change', function() {
+                    const row = this.closest('tr');
+                    if (!row) return;
+                    const timeInputs = row.querySelectorAll('input[type="time"]');
+                    if (this.checked) {
+                        timeInputs.forEach(inp => {
+                            inp.disabled = false;
+                        });
+                    } else {
+                        timeInputs.forEach(inp => {
+                            inp.disabled = true;
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+@endpush
