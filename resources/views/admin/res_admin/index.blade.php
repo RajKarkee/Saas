@@ -50,7 +50,7 @@
                                 </td>
                                 <td>{{ $admin->name ?? '—' }}</td>
                                 <td>{{ $admin->email ?? '—' }}</td>
-                                <td>{{ $admin->adminRestaurant->restaurant_count }}</td>
+                                <td>{{ $admin->adminRestaurant->restaurant_count ?? '0' }}</td>
                                 <td>
                                     @php $status = strtolower($admin->status ?? 'inactive'); @endphp
                                     @if ($status === 'active')
