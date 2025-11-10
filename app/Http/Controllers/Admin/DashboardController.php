@@ -8,6 +8,7 @@ use App\Models\Restaurant;
 use App\Models\Restaurant_schedules_table;
 use Illuminate\Http\Request;
 
+
 class DashboardController extends Controller
 {
     public function index(Request $request)
