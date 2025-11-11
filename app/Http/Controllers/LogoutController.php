@@ -19,53 +19,28 @@ class LogoutController extends Controller
         // Define all guards + their token/session keys
         $guards = [
             'superadmin' => [
-                'token_session' => 'superadmin_token',
+                
                 'model' => SuperAdmin::class,
                 'redirect' => route('logout.page')
             ],
             'admin' => [
-                'token_session' => 'admin_token',
+              
                 'model' => Admin::class,
                 'redirect' => route('logout.page')
             ],
             'staff' => [
-                'token_session' => 'staff_token',
+                
                 'model' => Staff::class,
                 'redirect' => route('logout.page')
             ],
         ];
 
         foreach ($guards as $guard => $config) {
-            $plainToken = $request->session()->get($config['token_session']);
+       if(Auth::guard($guard)->check()){
+        Auth::guard($guard)->logout();
+        return redirect()->route('logout.page')->with('message', 'Logged out successfully .');
+       }
 
-            if ($plainToken) {
-                // Resolve Sanctum token
-                $accessToken = PersonalAccessToken::findToken($plainToken);
-
-                // Validate token ownership
-                if ($accessToken && $accessToken->tokenable_type === $config['model']) {
-                    // Delete the token (logout this device/session)
-                    $accessToken->delete();
-
-                    // Clear the session keys
-                    Session::forget([
-                        $config['token_session'],
-                        "{$guard}_id",
-                    ]);
-
-                    Session::invalidate();
-                    Session::regenerateToken();
-
-                    $message = ucfirst($guard) . ' logged out successfully.';
-                    
-                    // return response()->json([
-                    //     'success' => true,
-                    //     'message' => $message,
-                    //     'redirect' => route('logout.page', ['message' => $message])
-                    // ]);
-                    return redirect()->route('logout.page', ['message' => $message]);
-                }
-            }
         }
 
         return response()->json([

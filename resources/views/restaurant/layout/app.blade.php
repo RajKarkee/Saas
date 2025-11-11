@@ -233,68 +233,68 @@
                 alert('Edit functionality would open here');
             });
 
-            // Chart.js Implementation
-            const ctx = document.getElementById('revenueChart');
-            if (ctx) {
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
-                        datasets: [{
-                            label: 'Revenue',
-                            data: [12000, 19000, 15000, 25000, 22000, 30000, 28000, 35000, 32000,
-                                40000
-                            ],
-                            borderColor: '#4e73df',
-                            backgroundColor: 'rgba(78, 115, 223, 0.1)',
-                            tension: 0.4,
-                            fill: true,
-                            pointBackgroundColor: '#4e73df',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(0,0,0,0.8)',
-                                padding: 12,
-                                cornerRadius: 8,
-                                callbacks: {
-                                    label: function(context) {
-                                        return context.parsed.y.toLocaleString();
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    callback: function(value) {
-                                        return (value / 1000) + 'K';
-                                    }
-                                },
-                                grid: {
-                                    color: 'rgba(0,0,0,0.05)'
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                }
-                            }
-                        }
-                    }
-                });
-            }
+            // // Chart.js Implementation
+            // const ctx = document.getElementById('revenueChart');
+            // if (ctx) {
+            //     new Chart(ctx, {
+            //         type: 'line',
+            //         data: {
+            //             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+            //             datasets: [{
+            //                 label: 'Revenue',
+            //                 data: [12000, 19000, 15000, 25000, 22000, 30000, 28000, 35000, 32000,
+            //                     40000
+            //                 ],
+            //                 borderColor: '#4e73df',
+            //                 backgroundColor: 'rgba(78, 115, 223, 0.1)',
+            //                 tension: 0.4,
+            //                 fill: true,
+            //                 pointBackgroundColor: '#4e73df',
+            //                 pointBorderColor: '#fff',
+            //                 pointBorderWidth: 2,
+            //                 pointRadius: 4,
+            //                 pointHoverRadius: 6
+            //             }]
+            //         },
+            //         options: {
+            //             responsive: true,
+            //             maintainAspectRatio: true,
+            //             plugins: {
+            //                 legend: {
+            //                     display: false
+            //                 },
+            //                 tooltip: {
+            //                     backgroundColor: 'rgba(0,0,0,0.8)',
+            //                     padding: 12,
+            //                     cornerRadius: 8,
+            //                     callbacks: {
+            //                         label: function(context) {
+            //                             return context.parsed.y.toLocaleString();
+            //                         }
+            //                     }
+            //                 }
+            //             },
+            //             scales: {
+            //                 y: {
+            //                     beginAtZero: true,
+            //                     ticks: {
+            //                         callback: function(value) {
+            //                             return (value / 1000) + 'K';
+            //                         }
+            //                     },
+            //                     grid: {
+            //                         color: 'rgba(0,0,0,0.05)'
+            //                     }
+            //                 },
+            //                 x: {
+            //                     grid: {
+            //                         display: false
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     });
+            // }
 
             // Close sidebar when clicking outside on mobile
             $(document).on('click', function(e) {

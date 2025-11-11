@@ -142,16 +142,16 @@
                     </ul>
                 </li>
 
-                <!-- Orders -->
+                {{-- <!-- Orders -->
                 <li class="nav-item">
                     <a href="#" class="nav-link">
                         <i class="fas fa-shopping-cart"></i>
                         <span class="nav-text">Orders</span>
                     </a>
-                </li>
+                </li> --}}
 
                 <!-- Reports Dropdown -->
-                <li class="nav-item nav-dropdown">
+                {{-- <li class="nav-item nav-dropdown">
                     <a href="#" class="nav-link nav-dropdown-toggle" data-dropdown="reports">
                         <i class="fas fa-chart-bar"></i>
                         <span class="nav-text">Reports</span>
@@ -177,10 +177,10 @@
                             </a>
                         </li>
                     </ul>
-                </li>
+                </li> --}}
 
                 <!-- Settings Dropdown -->
-                <li class="nav-item nav-dropdown">
+                {{-- <li class="nav-item nav-dropdown">
                     <a href="#" class="nav-link nav-dropdown-toggle" data-dropdown="settings">
                         <i class="fas fa-cog"></i>
                         <span class="nav-text">Settings</span>
@@ -206,13 +206,23 @@
                             </a>
                         </li>
                     </ul>
-                </li>
+                </li> --}}
 
                 <!-- Support -->
-                <li class="nav-item">
+                {{-- <li class="nav-item">
                     <a href="#" class="nav-link">
                         <i class="fas fa-life-ring"></i>
                         <span class="nav-text">Support</span>
+                    </a>
+                </li> --}}
+                <li class="nav-item">
+
+                    <a href="#" class="nav-link">
+                        <form type="logout" action="{{ route('super_admin.logout') }}" method="POST" id="logoutForm">
+                            @csrf
+                        </form>
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span class="nav-text">Logout</span>
                     </a>
                 </li>
             </ul>
