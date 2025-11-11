@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use App\Models\Restaurant;
 use App\Models\AdminRestaurant;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
@@ -32,45 +33,56 @@ class AdminController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $superAdmin = \App\Models\SuperAdmin::where('email', $request->email)->first();
-
-        if (!$superAdmin || !Hash::check($request->password, $superAdmin->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+        $credentials = $request->only('email', 'password');
+        if(Auth::guard('super_admin')->attempt($credentials)){
+         
+            return redirect()->route('super_admin.admins.index');
         }
+        else{   
+            return response()->json(['error' => 'Invalid Credentials'], 401);
+        }
+    //     $superAdmin = \App\Models\SuperAdmin::where('email', $request->email)->first();
 
-        // Create Sanctum token with abilities
-        $token = $superAdmin->createToken('super-admin-token', ['superadmin'])->plainTextToken;
+    //     if (!$superAdmin || !Hash::check($request->password, $superAdmin->password)) {
+    //         return response()->json(['message' => 'Invalid credentials'], 401);
+    //     }
 
-    // Store the plain token in session for middleware verification
-    $request->session()->put('superadmin_token', $token);
-    $request->session()->put('superadmin_id', $superAdmin->id);
-    // Regenerate session ID to persist and mitigate fixation
-    $request->session()->regenerate();
+    //     // Create Sanctum token with abilities
+    //     $token = $superAdmin->createToken('super-admin-token', ['superadmin'])->plainTextToken;
 
-        return response()->json([
-            'message' => 'Login successful',
-            'redirect' => route('super_admin.admins.index')
-        ]);
+    // // Store the plain token in session for middleware verification
+    // $request->session()->put('superadmin_token', $token);
+    // $request->session()->put('superadmin_id', $superAdmin->id);
+    // // Regenerate session ID to persist and mitigate fixation
+    // $request->session()->regenerate();
+
+    //     return response()->json([
+    //         'message' => 'Login successful',
+    //         'redirect' => route('super_admin.admins.index')
+    //     ]);
+
     }
 
     public function logout(Request $request)
     {
-        $token = $request->session()->get('superadmin_token');
-        
-        if ($token) {
-            $superAdmin = \App\Models\SuperAdmin::whereHas('tokens', function($q) use ($token) {
-                $q->where('token', hash('sha256', $token));
-            })->first();
-            
-            if ($superAdmin) {
-                $superAdmin->tokens()->where('token', hash('sha256', $token))->delete();
-            }
-        }
-
-        $request->session()->forget(['superadmin_token', 'superadmin_id']);
-        $request->session()->flush();
-
+        Auth::guard('super_admin')->logout();
         return redirect()->route('superadmin.login');
+        // $token = $request->session()->get('superadmin_token');
+        
+        // if ($token) {
+        //     $superAdmin = \App\Models\SuperAdmin::whereHas('tokens', function($q) use ($token) {
+        //         $q->where('token', hash('sha256', $token));
+        //     })->first();
+            
+        //     if ($superAdmin) {
+        //         $superAdmin->tokens()->where('token', hash('sha256', $token))->delete();
+        //     }
+        // }
+
+        // $request->session()->forget(['superadmin_token', 'superadmin_id']);
+        // $request->session()->flush();
+
+        // return redirect()->route('superadmin.login');
     }
 
     public function index(Request $request)

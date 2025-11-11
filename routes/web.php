@@ -1,10 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Super_Admin\RestaurantController as Super_AdminRestaurantController;
+use App\Http\Controllers\SuperAdmin\RestaurantController as SuperAdminRestaurantController;
 use App\Http\Controllers\Restaurant\AuthenticationController as RestaurantAuthController;
 use App\Http\Controllers\Restaurant\Staff\StaffController as RestaurantStaffController;
-use App\Http\Controllers\Super_Admin\AdminController as SuperAdminadminController;
+use App\Http\Controllers\SuperAdmin\AdminController as SuperAdminadminController;
 use App\Http\Controllers\Admin\LoginController as AdminLogin;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController;
@@ -47,7 +47,7 @@ Route::post('/superadmin/logout', [SuperAdminadminController::class, 'logout'])-
   Route::post('admin/verify',[AdminLogin::class,'verify'])->name('admin.verify');
   Route::post('delivery/verify',[RestaurantAuthController::class,'login'])->name('delivery.verify');
 
-Route::prefix('super_admin')->middleware(['superadmin.sanctum:superadmin'])->name('super_admin.')->group(function(){
+Route::prefix('super_admin')->middleware(['auth:super_admin'])->name('super_admin.')->group(function(){
     Route::prefix('admins')->name('admins.')->group(function(){
     Route::match(['get','post'],'/index',[SuperAdminadminController::class,'index']
     )->name('index');
@@ -61,15 +61,15 @@ Route::prefix('super_admin')->middleware(['superadmin.sanctum:superadmin'])->nam
 Route::prefix('restaurant')->name('restaurant.')->group(function(){
     Route::match(['get','post'],'/index',[Super_AdminRestaurantController::class,'index']
     )->name('index');
-    Route::get('/create',[Super_AdminRestaurantController::class,'create']
+    Route::get('/create',[SuperAdminRestaurantController::class,'create']
     )->name('create');
-    Route::post('/store', [Super_AdminRestaurantController::class, 'store'])->name('store');
-    Route::get('/edit/{id}', [Super_AdminRestaurantController::class, 'edit'])->name('edit');
-    Route::put('/update/{id}', [Super_AdminRestaurantController::class, 'update'])->name('update');
-    Route::delete('/destroy/{id}', [Super_AdminRestaurantController::class, 'destroy'])->name('destroy');
-    Route::get('/search', [Super_AdminRestaurantController::class, 'search'])->name('admin.search');
-    Route::get('/pending', [Super_AdminRestaurantController::class, 'pending'])->name('pending');
-    Route::get('/restaurant-view/{id}', [Super_AdminRestaurantController::class, 'view'])->name('view');
+    Route::post('/store', [SuperAdminRestaurantController::class, 'store'])->name('store');
+    Route::get('/edit/{id}', [SuperAdminRestaurantController::class, 'edit'])->name('edit');
+    Route::put('/update/{id}', [SuperAdminRestaurantController::class, 'update'])->name('update');
+    Route::delete('/destroy/{id}', [SuperAdminRestaurantController::class, 'destroy'])->name('destroy');
+    Route::get('/search', [SuperAdminRestaurantController::class, 'search'])->name('admin.search');
+    Route::get('/pending', [SuperAdminRestaurantController::class, 'pending'])->name('pending');
+    Route::get('/restaurant-view/{id}', [SuperAdminRestaurantController::class, 'view'])->name('view');
     
 });
 });

@@ -38,15 +38,15 @@ class Restaurant extends Model
     }
     public function menuCategories()
     {
-        return $this->hasMany(Menu_category::class);
+        return $this->hasMany(MenuCategory::class);
     }
     public function menuItems()
     {
-        return $this->hasMany(Menu_item::class);
+        return $this->hasMany(MenuItem::class);
     }
     public function menuItemAddons()
     {
-        return $this->hasManyThrough(Menu_item_addon::class, Menu_item::class, 'restaurant_id', 'menu_item_id', 'id', 'id');
+        return $this->hasManyThrough(MenuItemAddon::class, MenuItem::class, 'restaurant_id', 'menu_item_id', 'id', 'id');
     }
     public function orders()
     {
@@ -58,6 +58,6 @@ class Restaurant extends Model
     }
     public function schedules()
     {
-        return $this->hasOne(Restaurant_schedules_table::class);
+        return $this->hasOne(RestaurantSchedulesTable::class);
     }
 }

@@ -13,10 +13,10 @@ use App\Models\Admin;
 use App\Models\Staff_photo;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Menu_Category;
-use App\Models\Menu_Item;
-use App\Models\Menu_item_addon;
-use App\Models\Menu_item_image;
-use App\Models\Restaurant_Schedule_table;
+use App\Models\MenuItem;
+use App\Models\MenuItemAddon;
+use App\Models\MenuItemImage;
+use App\Models\RestaurantSchedule;
 
 
 
@@ -210,7 +210,7 @@ class RestaurantController extends Controller
         $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
 
         $staff = $restaurant->staff()->get();
-        $staff_photos = Staff_photo::whereIn('staff_id', $staff->pluck('id'))->get()->keyBy('staff_id');
+        $staff_photos = StaffPhoto::whereIn('staff_id', $staff->pluck('id'))->get()->keyBy('staff_id');
         
         return view('restaurant.staff.staff',  compact('staff', 'staff_photos')
         );
@@ -256,7 +256,7 @@ public function staffStore(Request $request)
         ]);
         if ($validated['photo'] ?? false) {
             $imagePath = $validated['photo']->store('staff_photos', 'public');
-            Staff_photo::create([
+            StaffPhoto::create([
                 'staff_id' => $staff->id,
                 'photo_url' => $imagePath,
             ]);
@@ -274,7 +274,7 @@ public function staffStore(Request $request)
         $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
 
         $staff = $restaurant->staff()->findOrFail($staffId);
-        $staff_photo = Staff_photo::where('staff_id', $staff->id)->first();
+        $staff_photo = StaffPhoto::where('staff_id', $staff->id)->first();
 
          if ($staff_photo) {
             $staff->photo_url = $staff_photo->photo_url;
@@ -326,12 +326,12 @@ public function staffStore(Request $request)
 
         if ($validated['photo'] ?? false) {
             $imagePath = $validated['photo']->store('staff_photos', 'public');
-            $staffPhoto = Staff_photo::where('staff_id', $staff->id)->first();
+            $staffPhoto = StaffPhoto::where('staff_id', $staff->id)->first();
             if ($staffPhoto) {
                 $staffPhoto->photo_url = $imagePath;
                 $staffPhoto->save();
             } else {
-                Staff_photo::create([
+                StaffPhoto::create([
                     'staff_id' => $staff->id,
                     'photo_url' => $imagePath,
                 ]);
@@ -352,7 +352,7 @@ public function staffStore(Request $request)
         $staff = $restaurant->staff()->findOrFail($staffId);
 
         // Delete associated photo if exists
-        Staff_photo::where('staff_id', $staff->id)->delete();
+        StaffPhoto::where('staff_id', $staff->id)->delete();
 
         $staff->delete();
 
@@ -368,7 +368,7 @@ public function staffStore(Request $request)
         $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
 
         $deliveryMen = $restaurant->staff()->where('role', 2)->get();
-        $staff_photos = Staff_photo::whereIn('staff_id', $deliveryMen->pluck('id'))->get()->keyBy('staff_id');
+        $staff_photos = StaffPhoto::whereIn('staff_id', $deliveryMen->pluck('id'))->get()->keyBy('staff_id');
 
         return view('restaurant.staff.deliveryMen',  compact('deliveryMen', 'staff_photos')
         );
@@ -383,13 +383,12 @@ public function staffStore(Request $request)
         $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
 
         $managers = $restaurant->staff()->where('role', 0)->get();
-        $staff_photos = Staff_photo::whereIn('staff_id', $managers->pluck('id'))->get()->keyBy('staff_id');
-
+        $staff_photos = StaffPhoto::whereIn('staff_id', $managers->pluck('id'))->get()->keyBy('staff_id');
         return view('restaurant.staff.manager',  compact('managers', 'staff_photos')
         );
     }
-    public function categoryIndex(){
-        $adminId = session()->get('admin_id');
+    public function categoryIndex(Request $request){
+        $adminId = $request->session()->get('admin_id');
         if (!$adminId) {
             abort(403, 'Admin session missing.');
         }
@@ -416,7 +415,7 @@ public function staffStore(Request $request)
         ]);
 
       
-   $category = new Menu_Category();
+   $category = new MenuCategory();
         $category->restaurant_id = $restaurant->id;
         $category->name = $validated['name'];
         $category->position = $validated['position'] ?? null;
@@ -483,7 +482,7 @@ public function staffStore(Request $request)
             abort(403, 'Admin session missing.');
         }
         $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
-       $category = Menu_Category::findOrFail($id);
+       $category = MenuCategory::findOrFail($id);
       
 
         //
@@ -495,7 +494,7 @@ public function staffStore(Request $request)
         }
 
         $items = $itemsQuery->get();
-        $item_images = Menu_item_image::whereIn('menu_item_id', $items->pluck('id'))->get()->groupBy('menu_item_id');
+        $item_images = MenuItemImage::whereIn('menu_item_id', $items->pluck('id'))->get()->groupBy('menu_item_id');
 
         return view('restaurant.menu.items.index', compact('items', 'category', 'item_images'));
     }
@@ -505,7 +504,7 @@ public function staffStore(Request $request)
             abort(403, 'Admin session missing.');
         }
         $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
-       $category = Menu_Category::findOrFail($categoryId);
+       $category = MenuCategory::findOrFail($categoryId);
         return view('restaurant.menu.items.form', compact('category'));
     }
     public function itemStore(Request $request, $categoryId){
@@ -515,7 +514,7 @@ public function staffStore(Request $request)
         }
 
         $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
-       $category = Menu_Category::findOrFail($categoryId);
+       $category = MenuCategory::findOrFail($categoryId);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -527,7 +526,7 @@ public function staffStore(Request $request)
             'image_alt' => ['nullable', 'image', 'max:2048'],
         ]);
 
-        $item = new Menu_Item();
+        $item = new MenuItem();
         $item->restaurant_id = $restaurant->id;
         $item->menu_category_id = $category->id;
         $item->name = $validated['name'];
@@ -543,7 +542,7 @@ public function staffStore(Request $request)
             if ($request->hasFile('image_alt')) {
                 $imageAltPath = $request->file('image_alt')->store('menu_item_images', 'public');
             }
-            Menu_item_image::create([
+            MenuItemImage::create([
                 'menu_item_id' => $item->id,
                 'image_alt' => $imageAltPath,
                 'image_url' => $imagePath,
@@ -561,7 +560,7 @@ public function staffStore(Request $request)
 
         $item = $restaurant->menuItems()->findOrFail($itemId);
         $category = Menu_Category::findOrFail($item->menu_category_id);
-        $item_images = Menu_item_image::where('menu_item_id', $item->id)->get();
+        $item_images = MenuItemImage::where('menu_item_id', $item->id)->get();
 
         return view('restaurant.menu.items.form', compact('item', 'category','item_images'));
     }
@@ -574,8 +573,7 @@ public function staffStore(Request $request)
         $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
 
         $item = $restaurant->menuItems()->findOrFail($itemId);
-        $category = Menu_Category::findOrFail($item->menu_category_id);
-
+        $category = MenuCategory::findOrFail($item->menu_category_id);
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -599,7 +597,7 @@ public function staffStore(Request $request)
                 $image_alt = null;
             }
            
-   $menu_item_image= Menu_item_image::where('menu_item_id', $item->id)->first();
+   $menu_item_image= MenuItemImage::where('menu_item_id', $item->id)->first();
             if($menu_item_image){
                 $menu_item_image->image_url = $imagePath;
                 $menu_item_image->image_alt = $image_alt;
@@ -624,7 +622,7 @@ public function staffStore(Request $request)
         $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
 
         $item = $restaurant->menuItems()->findOrFail($itemId);
-        $category = Menu_Category::findOrFail($item->menu_category_id);
+        $category = MenuCategory::findOrFail($item->menu_category_id);
 
         // Delete associated images if exist
         Menu_item_image::where('menu_item_id', $item->id)->delete();
@@ -639,9 +637,8 @@ public function staffStore(Request $request)
             abort(403, 'Admin session missing.');
         }
         $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
-       $item = Menu_Item::findOrFail($itemId);
-       $category = Menu_Category::findOrFail($item->menu_category_id);
-
+       $item = MenuItem::findOrFail($itemId);
+       $category = MenuCategory::findOrFail($item->menu_category_id);
         //
     
         $addons = $restaurant->menuItemAddons()->where('menu_item_id', $item->id)->get();
@@ -664,7 +661,7 @@ public function staffStore(Request $request)
         }
 
         $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
-       $item = Menu_Item::findOrFail($itemId);
+       $item = MenuItem::findOrFail($itemId);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -673,7 +670,7 @@ public function staffStore(Request $request)
             'is_available' => [ 'boolean'],
         ]);
 
-        $addon = new Menu_item_addon();
+        $addon = new MenuItemAddon();
         $addon->restaurant_id = $restaurant->id;
         $addon->menu_item_id = $item->id;
         $addon->name = $validated['name'];
@@ -691,8 +688,8 @@ public function staffStore(Request $request)
         }
         $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
 
-       $addon = Menu_item_addon::findOrFail($id);
-         $item = Menu_Item::findOrFail($addon->menu_item_id);
+       $addon = MenuItemAddon::findOrFail($id);
+         $item = MenuItem::findOrFail($addon->menu_item_id);
 
         return view('restaurant.menu.addons.form', compact('addon', 'item'));
     }
@@ -704,9 +701,8 @@ public function staffStore(Request $request)
 
         $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
 
-        $addon = Menu_item_addon::findOrFail($id);
-        $item = Menu_Item::findOrFail($addon->menu_item_id);
-
+        $addon = MenuItemAddon::findOrFail($id);
+        $item = MenuItem::findOrFail($addon->menu_item_id);
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'additional_price' => ['required', 'numeric', 'min:0'],

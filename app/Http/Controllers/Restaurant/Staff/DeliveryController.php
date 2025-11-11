@@ -145,12 +145,12 @@ public function startDelivery(Request $request, $id)
 
             DB::beginTransaction();
             try {
-                // If user uploaded a new photo, store it and update staff_photos
+              
                 if ($request->hasFile('photo')) {
                     $file = $request->file('photo');
                     $path = $file->store('staff_photos', 'public');
 
-                    // delete old photo if exists
+                  
                     $existing = DB::table('staff_photos')->where('staff_id', $staffId)->first();
                     if ($existing && !empty($existing->path)) {
                         Storage::disk('public')->delete($existing->path);
@@ -161,7 +161,7 @@ public function startDelivery(Request $request, $id)
                         ['path' => $path, 'updated_at' => now()]
                     );
                 } elseif ($removePhoto) {
-                    // remove existing photo record and delete file
+                   
                     $existing = DB::table('staff_photos')->where('staff_id', $staffId)->first();
                     if ($existing && !empty($existing->path)) {
                         Storage::disk('public')->delete($existing->path);
@@ -169,19 +169,19 @@ public function startDelivery(Request $request, $id)
                     DB::table('staff_photos')->where('staff_id', $staffId)->delete();
                 }
 
-                // Update staff table
+              
                 DB::table('staff')->where('id', $staffId)->update($data);
 
                 DB::commit();
                 return redirect()->back()->with('success', 'Profile updated successfully.');
             } catch (\Exception $e) {
                 DB::rollBack();
-                // Log the error if you have logging setup (omitted here for brevity)
+              
                 return redirect()->back()->with('error', 'Failed to update profile. Please try again.');
             }
         }
 
-        // Render profile page
+   
         $staffphoto = DB::table('staff_photos')->where('staff_id', $staff->id)->first();
         return view('delivery.profile', compact('staff', 'restaurant', 'staffphoto'));
     }

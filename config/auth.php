@@ -34,25 +34,22 @@ return [
     | Supported: "session"
     |
     */
-    'guards' =>[
-        'super_admin' => [
-        'driver' => 'sanctum',
-        'provider' => 'super_admins',
-        ],
-        'admin' => [
-            'driver' => 'sanctum',
-            'provider' => 'admins',
-        ],
-        'staff' => [
-            'driver' => 'sanctum',
-            'provider' => 'staff',
-        ],
-    ],
-
     'guards' => [
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
+        ],
+        'super_admin' => [
+            'driver' => 'session',
+            'provider' => 'super_admins',
+        ],
+        'admin' => [
+            'driver' => 'session',
+            'provider' => 'admins',
+        ],
+        'staff' => [
+            'driver' => 'session',
+            'provider' => 'staff',
         ],
     ],
 
@@ -78,13 +75,6 @@ return [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
-    ],
-    'providers' =>[
         'super_admins' => [
             'driver' => 'eloquent',
             'model' => App\Models\SuperAdmin::class,

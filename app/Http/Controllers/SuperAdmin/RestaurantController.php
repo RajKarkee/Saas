@@ -77,7 +77,7 @@ class RestaurantController extends Controller
         ->select('ar.admin_id', 'ar.restaurant_count', DB::raw('COUNT(r.id) as actual_count'))
         ->groupBy('ar.admin_id', 'ar.restaurant_count')
         ->havingRaw('actual_count < ar.restaurant_count')
-        ->pluck('ar.admin_id'); // only get admin_id list
+        ->pluck('ar.admin_id'); 
         $admin=DB::table('admins')
         ->whereIn('id', $missingAdmins)
         ->get();
@@ -86,7 +86,7 @@ class RestaurantController extends Controller
     }
     public function store(Request $request)
     {
-        // Handle storing logic here
+       
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
           

@@ -8,8 +8,8 @@ use App\Models\Order;
 use App\Models\Restaurant;
 use App\Models\Staff;
 use App\Models\Menu;
-use App\Models\Menu_Category;
-use App\Models\Order_item;
+use App\Models\MenuCategory;
+use App\Models\OrderItem;
 
 
 class OrderController extends Controller
@@ -27,8 +27,8 @@ class OrderController extends Controller
         }
         $orders = Order::where('restaurant_id', $restaurant->id)->get();
         $staff = Staff::where('restaurant_id', $restaurant->id)->get();
-        $menu_category = Menu_Category::where('restaurant_id', $restaurant->id)->get();
-        $order_items = Order_item::whereIn('order_id', $orders->pluck('id'))->get();
+        $menu_category = MenuCategory::where('restaurant_id', $restaurant->id)->get();
+        $order_items = OrderItem::whereIn('order_id', $orders->pluck('id'))->get();
 
         return view('restaurant.order.index', compact('orders', 'staff', 'menu_category', 'order_items'));
     }

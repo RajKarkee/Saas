@@ -20,7 +20,7 @@ class Menu_item extends Model
 
     public function category()
     {
-        return $this->belongsTo(Menu_category::class, 'menu_category_id');
+        return $this->belongsTo(MenuCategory::class, 'menu_category_id');
     }
     public function restaurant()
     {
@@ -28,10 +28,10 @@ class Menu_item extends Model
     }
     public function images()
     {
-        return $this->hasMany(Menu_item_image::class, 'menu_item_id');
+        return $this->hasMany(MenuItemImage::class, 'menu_item_id');
     }
     public function addons()
     {
-        return $this->hasMany(Menu_item_addon::class, 'menu_item_id');
+        return $this->hasMany(MenuItemAddon::class, 'menu_item_id');
 }
 }

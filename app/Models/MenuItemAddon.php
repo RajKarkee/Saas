@@ -20,7 +20,7 @@ class Menu_item_addon extends Model
 
     public function menuItem()
     {
-        return $this->belongsTo(Menu_Item::class, 'menu_item_id');
+        return $this->belongsTo(MenuItem::class, 'menu_item_id');
     }
     public function restaurant()
     {
