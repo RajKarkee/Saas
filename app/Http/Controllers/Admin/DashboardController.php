@@ -5,21 +5,21 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\Restaurant;
-use App\Models\RestaurantSchedules;
+use App\Models\RestaurantSchedule;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $adminId = $request->session()->get('admin_id');
+        // $adminId = $request->session()->get('admin_id');
 
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
+        // if (!$adminId) {
+        //     abort(403, 'Admin session missing.');
+        // }
 
-        $admin = Admin::with(['restaurants.staff'])->findOrFail($adminId);
+        $admin = Admin::with(['restaurants.staff'])->findOrFail(Auth::id());
         $restaurants = $admin->restaurants()->with('staff')->orderByDesc('created_at')->get();
 
         $currentRestaurant = null;
@@ -33,9 +33,9 @@ class DashboardController extends Controller
         });
 
         // Preload schedules for current restaurant for the schedule form
-        $schedules = collect();
+        $schedule = collect();
         if ($currentRestaurant) {
-            $schedules = RestaurantSchedules::where('restaurant_id', $currentRestaurant->id)->get();
+            $schedule = RestaurantSchedule::where('restaurant_id', $currentRestaurant->id)->get();
         }
 
         return view('restaurant.dashboard', [
@@ -43,7 +43,7 @@ class DashboardController extends Controller
             'restaurants' => $restaurants,
             'currentRestaurant' => $currentRestaurant,
             'totalStaff' => $totalStaff,
-            'schedules' => $schedules,
+            'schedules' => $schedule,
         ]);
     }
 }

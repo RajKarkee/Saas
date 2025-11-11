@@ -10,13 +10,14 @@ use App\Models\RestaurantSetting;
 use Illuminate\Support\Facades\Schema;
 use App\Models\Staff;
 use App\Models\Admin;
-use App\Models\Staff_photo;
+use App\Models\Staffphoto;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Menu_Category;
 use App\Models\MenuItem;
 use App\Models\MenuItemAddon;
 use App\Models\MenuItemImage;
 use App\Models\RestaurantSchedule;
+use Illuminate\Support\Facades\Auth;
 
 
 
@@ -27,13 +28,10 @@ class RestaurantController extends Controller
      */
     public function edit(Request $request)
     {
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
+ 
 
        
-        $restaurant = Restaurant::where('owner_id', $adminId)->first();
+        $restaurant = Restaurant::where('owner_id', Auth::id())->first();
         if (!$restaurant) {
             $restaurant = new Restaurant([
                 'name' => '',
@@ -54,12 +52,9 @@ class RestaurantController extends Controller
      */
     public function update(Request $request)
     {
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
+    
 
-        $restaurant = Restaurant::where('owner_id', $adminId)->first();
+        $restaurant = Restaurant::where('owner_id', Auth::id())->first();
 
     
         $domainRule = ['required', 'string', 'max:255'];
@@ -98,11 +93,8 @@ class RestaurantController extends Controller
      */
     public function updateSchedules(Request $request)
     {
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+ 
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $days = $request->input('day_of_week', []);
         $opening = $request->input('opening_time', []);
@@ -150,13 +142,13 @@ class RestaurantController extends Controller
     }
     public function settings(Request $request)
     {
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
+                    // $adminId = $request->session()->get('admin_id');
+                    // if (!$adminId) {
+                    //     abort(403, 'Admin session missing.');
+                    // }
 
         // Ensure the admin has a restaurant
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         
         if ($request->isMethod('get')) {
@@ -202,12 +194,9 @@ class RestaurantController extends Controller
     }
     public function staffIndex(Request $request)
     {
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
+      
 
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $staff = $restaurant->staff()->get();
         $staff_photos = StaffPhoto::whereIn('staff_id', $staff->pluck('id'))->get()->keyBy('staff_id');
@@ -221,12 +210,9 @@ class RestaurantController extends Controller
     }
 public function staffStore(Request $request)
     {
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
 
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $roleMap=[
             'Manager'=>0,
@@ -266,12 +252,9 @@ public function staffStore(Request $request)
     }
     public function staffEdit(Request $request, $staffId)
     {
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
+  
 
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $staff = $restaurant->staff()->findOrFail($staffId);
         $staff_photo = StaffPhoto::where('staff_id', $staff->id)->first();
@@ -287,12 +270,8 @@ public function staffStore(Request $request)
     }
     public function staffUpdate(Request $request, $staffId)
     {
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
-
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+  
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $staff = $restaurant->staff()->findOrFail($staffId);
 
@@ -342,12 +321,9 @@ public function staffStore(Request $request)
     }
     public function staffDestroy(Request $request, $staffId)
     {
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
 
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $staff = $restaurant->staff()->findOrFail($staffId);
 
@@ -360,12 +336,9 @@ public function staffStore(Request $request)
     }
     public function deliveryMen(Request $request)
     {
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
+   
 
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $deliveryMen = $restaurant->staff()->where('role', 2)->get();
         $staff_photos = StaffPhoto::whereIn('staff_id', $deliveryMen->pluck('id'))->get()->keyBy('staff_id');
@@ -375,12 +348,9 @@ public function staffStore(Request $request)
     }
     public function manager(Request $request)
     {
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
+ 
 
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $managers = $restaurant->staff()->where('role', 0)->get();
         $staff_photos = StaffPhoto::whereIn('staff_id', $managers->pluck('id'))->get()->keyBy('staff_id');
@@ -388,11 +358,8 @@ public function staffStore(Request $request)
         );
     }
     public function categoryIndex(Request $request){
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+   
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
         $categories = $restaurant->menuCategories()->get();
         return view('restaurant.menu.categories.index', compact('categories'));
     }
@@ -400,12 +367,9 @@ public function staffStore(Request $request)
         return view('restaurant.menu.categories.form');
     }
     public function categoryStore(Request $request){
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
+ 
 
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -426,24 +390,18 @@ public function staffStore(Request $request)
         return redirect()->route('admin.restaurant.menu.categories.index')->with('success', 'Category created successfully.');
     }
     public function categoryEdit(Request $request, $categoryId){
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
+  
 
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $category = $restaurant->menuCategories()->findOrFail($categoryId);
 
         return view('restaurant.menu.categories.form', compact('category'));
     }
     public function categoryUpdate(Request $request, $categoryId){
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
+ 
 
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $category = $restaurant->menuCategories()->findOrFail($categoryId);
 
@@ -463,12 +421,8 @@ public function staffStore(Request $request)
         return redirect()->route('admin.restaurant.menu.categories.index')->with('success', 'Category updated successfully.');
     }
     public function categoryDestroy(Request $request, $id){
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
-
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+ 
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $category = $restaurant->menuCategories()->findOrFail($id);
 
@@ -477,11 +431,8 @@ public function staffStore(Request $request)
         return redirect()->route('admin.restaurant.menu.categories.index')->with('success', 'Category deleted successfully.');
     }
     public function itemIndex(Request $request, $id){
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+      
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
        $category = MenuCategory::findOrFail($id);
       
 
@@ -499,21 +450,16 @@ public function staffStore(Request $request)
         return view('restaurant.menu.items.index', compact('items', 'category', 'item_images'));
     }
     public function itemCreate(Request $request, $categoryId){
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
        $category = MenuCategory::findOrFail($categoryId);
         return view('restaurant.menu.items.form', compact('category'));
     }
     public function itemStore(Request $request, $categoryId){
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
+  
 
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
        $category = MenuCategory::findOrFail($categoryId);
 
         $validated = $request->validate([
@@ -552,25 +498,23 @@ public function staffStore(Request $request)
         return redirect()->route('admin.restaurant.menu.items.index', $category->id)->with('success', 'Menu item added successfully.');
     }
     public function itemEdit(Request $request, $itemId){
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $item = $restaurant->menuItems()->findOrFail($itemId);
-        $category = Menu_Category::findOrFail($item->menu_category_id);
+        $category = MenuCategory::findOrFail($item->menu_category_id);
         $item_images = MenuItemImage::where('menu_item_id', $item->id)->get();
 
         return view('restaurant.menu.items.form', compact('item', 'category','item_images'));
     }
     public function itemUpdate(Request $request, $itemId){
         $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
 
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
+
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $item = $restaurant->menuItems()->findOrFail($itemId);
         $category = MenuCategory::findOrFail($item->menu_category_id);
@@ -614,29 +558,26 @@ public function staffStore(Request $request)
         return redirect()->route('admin.restaurant.menu.items.index', $category->id)->with('success', 'Menu item updated successfully.');
     }
     public function itemDestroy(Request $request, $itemId){
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
 
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $item = $restaurant->menuItems()->findOrFail($itemId);
         $category = MenuCategory::findOrFail($item->menu_category_id);
 
         // Delete associated images if exist
-        Menu_item_image::where('menu_item_id', $item->id)->delete();
+        MenuItemImage::where('menu_item_id', $item->id)->delete();
 
         $item->delete();
 
         return redirect()->route('admin.restaurant.menu.items.index', $category->id)->with('success', 'Menu item deleted successfully.');
     }
     public function addonIndex(Request $request, $itemId){
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+        // $adminId = $request->session()->get('admin_id');
+        // if (!$adminId) {
+        //     abort(403, 'Admin session missing.');
+        // }
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
        $item = MenuItem::findOrFail($itemId);
        $category = MenuCategory::findOrFail($item->menu_category_id);
         //
@@ -646,21 +587,15 @@ public function staffStore(Request $request)
         return view('restaurant.menu.addons.index', compact('addons', 'item', 'category'));
     }
     public function addonCreate(Request $request, $itemId){
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
-       $item = Menu_Item::findOrFail($itemId);
+    
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
+       $item = MenuItem::findOrFail($itemId);
         return view('restaurant.menu.addons.form', compact('item','restaurant'));
     }
     public function addonStore(Request $request, $itemId){
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
+  
 
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
        $item = MenuItem::findOrFail($itemId);
 
         $validated = $request->validate([
@@ -682,11 +617,8 @@ public function staffStore(Request $request)
         return redirect()->route('admin.restaurant.menu.items.addons.index', $item->id)->with('success', 'Addon added successfully.');
     }
     public function addonEdit(Request $request, $id){
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+    
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
        $addon = MenuItemAddon::findOrFail($id);
          $item = MenuItem::findOrFail($addon->menu_item_id);
@@ -694,12 +626,9 @@ public function staffStore(Request $request)
         return view('restaurant.menu.addons.form', compact('addon', 'item'));
     }
     public function addonUpdate(Request $request, $id){
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
+     
 
-        $restaurant = Restaurant::where('owner_id', $adminId)->firstOrFail();
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $addon = MenuItemAddon::findOrFail($id);
         $item = MenuItem::findOrFail($addon->menu_item_id);

@@ -84,9 +84,14 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link" data-page="logout">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
+                    <a href="#" class="nav-link" ">
+                        <form method="POST" action="{{ route('admin.logout') }}" id="logoutForm">
+                            @csrf
+                            <button type="submit" class="btn btn-link nav-link" style="padding:0; color:inherit; text-align:left; width:100%;">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Logout</span>
+                            </button>
+                        </form>
                     </a>
                 </li>
             </ul>

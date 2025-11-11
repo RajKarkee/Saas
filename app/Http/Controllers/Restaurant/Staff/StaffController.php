@@ -6,17 +6,15 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Staff;
+use Illuminate\Support\Facades\Auth;
 
 class StaffController extends Controller
 {
     public function index(Request $request){
        
-        $staffId = $request->session()->get('staff_id');
-        if (!$staffId) {
-            abort(403, 'Staff session missing.');
-        }
         
-        $staff = DB::table('staff')->where('id', $staffId)->first();
+        
+        $staff = DB::table('staff')->where('id', Auth::guard('staff')->id())->first();
         if (!$staff) {
             abort(404, 'Staff not found.');
         }
@@ -54,13 +52,8 @@ class StaffController extends Controller
             'delivery_person_id' => 'required|integer|exists:staff,id'
         ]);
         
-        // Get the staff session
-        $staffId = $request->session()->get('staff_id');
-        if (!$staffId) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
         
-        $staff = DB::table('staff')->where('id', $staffId)->first();
+        $staff = DB::table('staff')->where('id', Auth::guard('staff')->id())->first();
         
     
         $order = DB::table('orders')
@@ -105,13 +98,9 @@ class StaffController extends Controller
             'status' => 'required|string|in:pending,confirmed,preparing,ready,out_for_delivery,delivered,completed,cancelled'
         ]);
         
-     
-        $staffId = $request->session()->get('staff_id');
-        if (!$staffId) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
+ 
         
-        $staff = DB::table('staff')->where('id', $staffId)->first();
+        $staff = DB::table('staff')->where('id', Auth::guard('staff')->id())->first();
         
        
         $order = DB::table('orders')
@@ -138,13 +127,9 @@ class StaffController extends Controller
     }
     
     public function setting(Request $request){
-        $staffId = $request->session()->get('staff_id');
-        if (!$staffId) {
-            abort(403, 'Staff session missing.');
-        }
-        
-        $staff = DB::table('staff')->where('id', $staffId)->first();
-        $photo =DB::table('staff_photos')->where('staff_id', $staffId)->first();
+
+        $staff = DB::table('staff')->where('id', Auth::guard('staff')->id())->first();
+        $photo =DB::table('staff_photos')->where('staff_id', Auth::guard('staff')->id())->first();
         if (!$staff) {
             abort(404, 'Staff not found.');
         }
@@ -177,12 +162,9 @@ class StaffController extends Controller
     }
 
     public function orderView(Request $request, $id){
-        $staffId = $request->session()->get('staff_id');
-        if (!$staffId) {
-            abort(403, 'Staff session missing.');
-        }
 
-        $staff = DB::table('staff')->where('id', $staffId)->first();
+
+        $staff = DB::table('staff')->where('id', Auth::guard('staff')->id())->first();
         if (!$staff) {
             abort(404, 'Staff not found.');
         }

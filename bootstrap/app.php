@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'superadmin.sanctum' => \App\Http\Middleware\SanctumSuperAdmin::class,
             'admin.sanctum' => \App\Http\Middleware\SanctumAdmin::class,
             'staff.sanctum' => \App\Http\Middleware\SanctumStaff::class,
+            'staff.role' => \App\Http\Middleware\StaffRoleMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

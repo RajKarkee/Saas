@@ -6,17 +6,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Restaurant;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
-
-        $restaurant = Restaurant::where('owner_id', $adminId)->first();
+    
+        $restaurant = Restaurant::where('owner_id', Auth::id())->first();
         if (!$restaurant) {
             abort(403, 'Restaurant not found.');
         }

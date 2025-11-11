@@ -3,90 +3,77 @@
 namespace App\Http\Controllers\Restaurant;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Staff;
 use App\Models\Restaurant;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
-use Illuminate\Support\Facades\DB;
-
+use App\Models\Staff;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AuthenticationController extends Controller
 {
-  public function register(Request $request){
-        // Registration disabled - this endpoint intentionally returns 404
+    public function register(Request $request)
+    {
+
         abort(404);
     }
-    public function login(Request $request){
+
+    public function login(Request $request)
+{
     $request->validate([
         'email' => 'required|email',
         'password' => 'required',
     ]);
 
-    $staff = Staff::where('email', $request->email)->first();
-    if (!$staff || !Hash::check($request->password, $staff->password)) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Invalid email or password'
-        ], 401);
-    }
+    $credentials = $request->only('email', 'password');
+
+    if (Auth::guard('staff')->attempt($credentials)) {
+
+      
+        $staff = Auth::guard('staff')->user();
+
+
+        $restaurant = \App\Models\Restaurant::find($staff->restaurant_id);
+
     
-    // Clear any existing staff session to prevent conflicts
-    // This ensures only one staff member can be logged in per browser
-    $oldToken = $request->session()->get('staff_token');
-    if ($oldToken) {
-        $oldAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($oldToken);
-        if ($oldAccessToken) {
-            $oldAccessToken->delete();
-        }
-    }
-    
-    $ability = match($staff->role) {
-        0 =>'manager',
-        1 => 'staff',
-        2 =>'delivery',
-        default => 'staff',
-    };
-    $token = $staff->createToken('staff_token', [$ability])->plainTextToken;
-    
-    // Regenerate session for security
-    $request->session()->regenerate();
-    
-    // Set new session values
-    $request->session()->put('staff_token', $token);
-    $request->session()->put('staff_id', $staff->id);
-    $request->session()->put('staff_role', $staff->role);
-    
-    $restaurant = Restaurant::find($staff->restaurant_id);
-$routeMatch = match($staff->role){
-    0 => route('restaurant.staff.dashboard'), // Manager
-    1 => route('restaurant.staff.index'),  // Chef1
-    2 => route('restaurant.delivery.index'), // Waiter
-};
+        $routeMatch = match ($staff->role) {
+            0 => route('restaurant.staff.dashboard'), 
+            1 => route('restaurant.staff.index'),     
+            2 => route('restaurant.delivery.index'),  
+            default => route('restaurant.login'),
+        };
+
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
             'data' => [
                 'restaurant' => $restaurant,
                 'staff' => $staff,
-                'token' => $token,
             ],
             'redirect' => $routeMatch,
         ], 200);
     }
 
-    public function logout(Request $request){
-        $request->user()->currentAccessToken()->delete();
-        return response()->json([
-            'success' => true,
-            'message' => 'Logged out successfully'
-        ], 200);
+
+    return response()->json([
+        'success' => false,
+        'message' => 'Invalid email or password.',
+    ], 401);
+}
+
+
+    public function logout(Request $request)
+    {
+        Auth::guard('staff')->logout();
+
+        return redirect()->route('restaurant.login')->with('message', 'Logged out successfully');
     }
-    public function logoutall(Request $request){
-        $request->user()->tokens()->delete();
+
+    public function logoutall(Request $request)
+    {
+        Auth::guard('staff')->user()->tokens()->delete();
+
         return response()->json([
             'success' => true,
-            'message' => 'Logged out from all devices successfully'
+            'message' => 'Logged out from all devices successfully',
         ], 200);
     }
 }

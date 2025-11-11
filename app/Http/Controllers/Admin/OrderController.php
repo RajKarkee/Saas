@@ -10,18 +10,19 @@ use App\Models\Staff;
 use App\Models\Menu;
 use App\Models\MenuCategory;
 use App\Models\OrderItem;
+use Illuminate\Support\Facades\Auth;
 
 
 class OrderController extends Controller
 {
     public function orderIndex(Request $request)
     {
-        $adminId = $request->session()->get('admin_id');
-        if (!$adminId) {
-            abort(403, 'Admin session missing.');
-        }
-        // Use owner_id like other admin controllers to locate the restaurant
-        $restaurant = Restaurant::where('owner_id', $adminId)->first();
+        // $adminId = $request->session()->get('admin_id');
+        // if (!$adminId) {
+        //     abort(403, 'Admin session missing.');
+        // }
+    
+        $restaurant = Restaurant::where('owner_id', Auth::id())->first();
         if (!$restaurant) {
             abort(403, 'Restaurant not found.');
         }

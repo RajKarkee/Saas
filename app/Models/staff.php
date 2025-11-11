@@ -15,6 +15,9 @@ class Staff extends Authenticatable
     protected $fillable = [
         'restaurant_id', 'name', 'email', 'password', 'phone', 'role', 'status'
     ];
+    protected $hidden = [
+        'password', 'remember_token',
+    ];
 
     public function restaurant()
     {
@@ -23,6 +26,14 @@ class Staff extends Authenticatable
 
     public function photo()
     {
-        return $this->hasOne(Staff_photo::class);
+        return $this->hasOne(StaffPhoto::class);
+    }
+    public function getRoleNameAttribute(){
+        return match($this->role){
+            0=>'Manager',
+            1=>'Staff',
+            2=>'Delivery',
+            default=>'Unknown',
+        };
     }
 }

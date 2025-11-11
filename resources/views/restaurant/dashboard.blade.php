@@ -184,7 +184,7 @@
                             $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
                             $scheduleMap = [];
                             if (isset($currentRestaurant)) {
-                                $records = \App\Models\Restaurant_schedules_table::where(
+                                $records = \App\Models\RestaurantSchedule::where(
                                     'restaurant_id',
                                     optional($currentRestaurant)->id,
                                 )->get();

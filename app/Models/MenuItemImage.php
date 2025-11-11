@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Menu_item_image extends Model
+class MenuItemImage extends Model
 {
     protected $table = 'menu_item_images';
 
     protected $fillable = [
+        'restaurant_id',
         'menu_item_id',
         'image_url',
         'image_alt',

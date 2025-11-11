@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Menu_item_addon extends Model
+class MenuItemAddon extends Model
 {
     protected $table = 'menu_item_addons';
 

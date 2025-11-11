@@ -58,6 +58,6 @@ class Restaurant extends Model
     }
     public function schedules()
     {
-        return $this->hasOne(RestaurantSchedulesTable::class);
+        return $this->hasMany(RestaurantSchedule::class);
     }
 }

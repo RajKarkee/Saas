@@ -27,7 +27,7 @@
             <div class="card-body">
                 <form method="POST" action="{{ route('admin.restaurant.settings') }}" enctype="multipart/form-data">
                     @csrf
-                    {{-- Use PUT via hidden field if you prefer: @method('PUT') --}}
+
 
                     <input type="hidden" name="restaurant_id" value="{{ old('restaurant_id', $restaurantId) }}">
 
@@ -49,7 +49,7 @@
                                     <label for="phone" class="form-label fw-semibold">Phone</label>
                                     <input type="text" name="phone" id="phone"
                                         class="form-control @error('phone') is-invalid @enderror"
-                                        value="{{ old('phone', optional($setting)->phone) }}" placeholder="+1 555 555 5555">
+                                        value="{{ old('phone', optional($setting)->phone) }}" placeholder="98********">
                                     @error('phone')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -82,9 +82,11 @@
                             <label class="form-label fw-semibold">Restaurant Logo</label>
                             <div class="border rounded-3 p-3 h-100 d-flex flex-column justify-content-between">
                                 <div class="text-center mb-3">
-                                    <img src="{{ $logoUrl ?: asset('storage/' . $setting->logo) }}" id="logoPreview"
-                                        class="img-fluid rounded" style="max-height: 150px; object-fit: contain;"
-                                        alt="Logo">
+                                    @if ($setting && !empty($setting->logo))
+                                        <img src="{{ $logoUrl ?: asset('storage/' . $setting->logo) }}" id="logoPreview"
+                                            class="img-fluid rounded" style="max-height: 150px; object-fit: contain;"
+                                            alt="Logo">
+                                    @endif
                                 </div>
                                 <div>
                                     <label class="btn btn-outline-secondary w-100" for="logoInput">

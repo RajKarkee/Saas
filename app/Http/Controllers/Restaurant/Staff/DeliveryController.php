@@ -11,14 +11,13 @@ use App\Models\Order;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+
 class DeliveryController extends Controller
 {
    public function index(Request $request)
     {
-        $staffId = $request->session()->get('staff_id');
-        if (!$staffId) {
-            abort(403, 'Staff session missing.');
-        }
+        $staffId = Auth::guard('staff')->id();
         // Use correlated subqueries to aggregate order_items per order (avoids GROUP BY issues)
         $orders = DB::table('orders')
             ->where('delivery_person_id', $staffId,)
@@ -39,10 +38,7 @@ class DeliveryController extends Controller
    
     public function setting(Request $request)
     {
-        $staffId = $request->session()->get('staff_id');
-        if (!$staffId) {
-            abort(403, 'Staff session missing.');
-        }
+        $staffId = Auth::guard('staff')->id();
 
        $staff= DB::table('staff')->where('id', $staffId)->first();
        $restaurant = DB::table('restaurants')->where('id', $staff->restaurant_id)->first();
@@ -53,10 +49,7 @@ class DeliveryController extends Controller
 }
 public function startDelivery(Request $request, $id)
     {
-        $staffId = $request->session()->get('staff_id');
-        if (!$staffId) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
+        $staffId = Auth::guard('staff')->id();
 
         $order = Order::where('id', $id)
             ->where('delivery_person_id', $staffId)
@@ -77,11 +70,7 @@ public function startDelivery(Request $request, $id)
     }
     public function ongoingDeliveries(Request $request)
     {
-        $staffId = $request->session()->get('staff_id');
-        if (!$staffId) {
-            abort(403, 'Staff session missing.');
-        }
-
+            $staffId = Auth::guard('staff')->id();
         $orders = DB::table('orders')
             ->where('delivery_person_id', $staffId)
             ->whereIn('delivery_status', ['in_transit'])
@@ -98,10 +87,7 @@ public function startDelivery(Request $request, $id)
     }
     public function profile(Request $request)
     {
-        $staffId = $request->session()->get('staff_id');
-        if (!$staffId) {
-            abort(403, 'Staff session missing.');
-        }
+           $staffId = Auth::guard('staff')->id();
 
         $staff = DB::table('staff')->where('id', $staffId)->first();
         if (!$staff) {
