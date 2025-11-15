@@ -19,7 +19,11 @@ class DashboardController extends Controller
         //     abort(403, 'Admin session missing.');
         // }
 
-        $admin = Admin::with(['restaurants.staff'])->findOrFail(Auth::id());
+        // $admin = Admin::with(['restaurants.staff'])->findOrFail(Auth::id());
+        $admin = DB::table('admins')->
+        leftjoin('restaurants', 'restaurants.owner_id', 'admins.id')->
+        where('id', Auth::id())->first();
+    
         $restaurants = $admin->restaurants()->with('staff')->orderByDesc('created_at')->get();
 
         $currentRestaurant = null;
