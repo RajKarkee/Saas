@@ -13,15 +13,12 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // $adminId = $request->session()->get('admin_id');
-
-        // if (!$adminId) {
-        //     abort(403, 'Admin session missing.');
-        // }
-
-        $admin = Admin::with(['restaurants.staff'])->findOrFail(Auth::id());
+        // Ensure we're using the correct guard for admin authentication
+        $admin = Auth::guard('admin')->user();
+        if (!$admin) {
+            abort(403, 'Admin not authenticated.');
+        }
        
-    
         $restaurants = $admin->restaurants()->with('staff')->orderByDesc('created_at')->get();
 
         $currentRestaurant = null;
@@ -37,7 +34,8 @@ class DashboardController extends Controller
         // Preload schedules for current restaurant for the schedule form
         $schedule = collect();
         if ($currentRestaurant) {
-            $schedule = RestaurantSchedule::where('restaurant_id', $currentRestaurant->id)->get();
+            // Use relationship to load schedules if it's defined on the Restaurant model
+            $schedule = $currentRestaurant->schedules()->get();
         }
 
         return view('restaurant.dashboard', [
