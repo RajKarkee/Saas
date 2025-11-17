@@ -18,11 +18,7 @@
                 <small class="text-muted">Welcome, {{ $superAdmin->name }}</small>
             @endif
         </div>
-        <div>
-            <button class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>Add New
-            </button>
-        </div>
+
     </div>
 
     {{-- show buttons/stats greeting --}}
