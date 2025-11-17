@@ -58,7 +58,7 @@ Route::prefix('super_admin')->middleware(['auth:super_admin'])->name('super_admi
         Route::delete('/destroy/{id}', [SuperAdminadminController::class, 'destroy'])->name('destroy');
     });
     Route::prefix('restaurant')->name('restaurant.')->group(function () {
-        Route::match(['get', 'post'], '/index', [Super_AdminRestaurantController::class, 'index']
+        Route::match(['get', 'post'], '/index', [SuperAdminRestaurantController::class, 'index']
         )->name('index');
         Route::get('/create', [SuperAdminRestaurantController::class, 'create']
         )->name('create');
