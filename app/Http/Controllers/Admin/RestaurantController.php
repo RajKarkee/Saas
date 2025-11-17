@@ -10,7 +10,7 @@ use App\Models\RestaurantSetting;
 use Illuminate\Support\Facades\Schema;
 use App\Models\Staff;
 use App\Models\Admin;
-use App\Models\Staffphoto;
+use App\Models\StaffPhoto;
 use Illuminate\Support\Facades\Hash;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
