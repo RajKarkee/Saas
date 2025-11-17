@@ -12,6 +12,7 @@ use App\Http\Controllers\Restaurant\Staff\DeliveryController as RestaurantStaffD
 use App\Http\Controllers\Restaurant\Staff\StaffController as RestaurantStaffController;
 use App\Http\Controllers\SuperAdmin\AdminController as SuperAdminadminController;
 use App\Http\Controllers\SuperAdmin\RestaurantController as SuperAdminRestaurantController;
+use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/staff/dashboard/view', function () {
@@ -47,6 +48,7 @@ Route::post('delivery/verify', [RestaurantAuthController::class, 'login'])->name
 
 Route::prefix('super_admin')->middleware(['auth:super_admin'])->name('super_admin.')->group(function () {
     Route::post('/logout', [SuperAdminadminController::class, 'logout'])->name('logout');
+    Route::get('/index',[SuperAdminDashboardController::class,'index'])->name('index');
     Route::prefix('admins')->name('admins.')->group(function () {
         Route::match(['get', 'post'], '/index', [SuperAdminadminController::class, 'index']
         )->name('index');

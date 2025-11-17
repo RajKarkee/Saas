@@ -8,7 +8,8 @@
             <ul class="list-unstyled">
                 <!-- Dashboard -->
                 <li class="nav-item">
-                    <a href="#" class="nav-link active">
+                    <a href="{{ route('super_admin.index') }}"
+                        class="nav-link {{ request()->routeIs('super_admin.index') ? 'active' : '' }}">
                         <i class="fas fa-tachometer-alt"></i>
                         <span class="nav-text">Dashboard</span>
                     </a>

@@ -36,7 +36,7 @@ class AdminController extends Controller
         $credentials = $request->only('email', 'password');
         if(Auth::guard('super_admin')->attempt($credentials)){
          
-            return redirect()->route('super_admin.admins.index');
+            return redirect()->route('super_admin.index');
         }
         else{   
             return response()->json(['error' => 'Invalid Credentials'], 401);
