@@ -12,7 +12,7 @@ use App\Models\Staff;
 use App\Models\Admin;
 use App\Models\Staffphoto;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Menu_Category;
+use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use App\Models\MenuItemAddon;
 use App\Models\MenuItemImage;
