@@ -11,6 +11,7 @@ use App\Models\SuperAdmin;
 use App\Models\Admin;
 use App\Models\Staff;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
 
 class LogoutController extends Controller
 {
