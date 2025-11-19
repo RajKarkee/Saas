@@ -41,22 +41,15 @@ class AuthenticationController extends Controller
             default => route('restaurant.login'),
         };
 
-        return response()->json([
-            'success' => true,
+        return redirect($routeMatch)->with([
             'message' => 'Login successful',
-            'data' => [
-                'restaurant' => $restaurant,
-                'staff' => $staff,
-            ],
-            'redirect' => $routeMatch,
-        ], 200);
+            'restaurant' => $restaurant,
+            'staff' => $staff,
+        ]);
     }
 
 
-    return response()->json([
-        'success' => false,
-        'message' => 'Invalid email or password.',
-    ], 401);
+    return redirect()->route('restaurant.login')->with('error', 'Invalid email or password.');
 }
 
 
