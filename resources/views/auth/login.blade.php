@@ -520,6 +520,47 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
             btn.disabled = true;
         });
+        document.addEventListener("DOMContentLoaded", function() {
+
+            const loginForm = document.getElementById("loginForm");
+
+            loginForm.addEventListener("submit", function(e) {
+
+
+                if (currentRole === "admin") {
+                    return;
+                }
+
+                // For staff or delivery → use AJAX
+                e.preventDefault();
+
+                const formData = new FormData(loginForm);
+
+                fetch(loginForm.action, {
+                        method: loginForm.method,
+                        body: formData,
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+
+                        if (data.redirect) {
+                            window.location.href = data.redirect;
+                            return;
+                        }
+
+                        if (data.message) {
+                            showAlert(data.message, data.success ? "success" : "danger");
+                        }
+                    })
+                    .catch(error => {
+                        showAlert("Something went wrong.", "danger");
+                    });
+            });
+
+        });
     </script>
 </body>
 
