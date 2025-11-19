@@ -259,47 +259,47 @@
             }
 
             // AJAX submit
-            document.getElementById('addadminForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const form = this;
-                const formData = new FormData(form);
-                const restaurantCount = parseInt(document.getElementById('restaurant_count').value, 10);
-                if (isNaN(restaurantCount) || restaurantCount < 1) {
-                    createToast('Restaurant count must be at least 1', 'error');
-                    return;
-                }
-                // basic client-side checks
-                if (!formData.get('name') || !formData.get('email')) {
-                    createToast('Please fill required fields', 'error');
-                    return;
-                }
+            // document.getElementById('addadminForm').addEventListener('submit', function(e) {
+            //     e.preventDefault();
+            //     const form = this;
+            //     const formData = new FormData(form);
+            //     const restaurantCount = parseInt(document.getElementById('restaurant_count').value, 10);
+            //     if (isNaN(restaurantCount) || restaurantCount < 1) {
+            //         createToast('Restaurant count must be at least 1', 'error');
+            //         return;
+            //     }
+            //     // basic client-side checks
+            //     if (!formData.get('name') || !formData.get('email')) {
+            //         createToast('Please fill required fields', 'error');
+            //         return;
+            //     }
 
-                fetch(form.action, {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                            'content')
-                    },
-                    body: formData
-                }).then(async res => {
-                    const data = await res.json().catch(() => ({}));
-                    if (!res.ok) {
-                        if (res.status === 422 && data.errors) {
-                            const first = Object.values(data.errors)[0][0];
-                            createToast(first, 'error');
-                        } else {
-                            createToast(data.error || 'An error occurred', 'error');
-                        }
-                        return;
-                    }
-                    createToast(data.message || 'Admin created', 'success');
-                    if (data.redirect) setTimeout(() => window.location = data.redirect, 900);
-                }).catch(err => {
-                    console.error(err);
-                    createToast('Failed to submit. Try again.', 'error');
-                });
-            });
+            //     fetch(form.action, {
+            //         method: 'POST',
+            //         headers: {
+            //             'X-Requested-With': 'XMLHttpRequest',
+            //             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+            //                 'content')
+            //         },
+            //         body: formData
+            //     }).then(async res => {
+            //         const data = await res.json().catch(() => ({}));
+            //         if (!res.ok) {
+            //             if (res.status === 422 && data.errors) {
+            //                 const first = Object.values(data.errors)[0][0];
+            //                 createToast(first, 'error');
+            //             } else {
+            //                 createToast(data.error || 'An error occurred', 'error');
+            //             }
+            //             return;
+            //         }
+            //         createToast(data.message || 'Admin created', 'success');
+            //         if (data.redirect) setTimeout(() => window.location = data.redirect, 900);
+            //     }).catch(err => {
+            //         console.error(err);
+            //         createToast('Failed to submit. Try again.', 'error');
+            //     });
+            // });
         })();
     </script>
 

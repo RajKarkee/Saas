@@ -152,17 +152,17 @@ class AdminController extends Controller
 
             DB::commit();
 
-            if ($request->wantsJson() || $request->ajax()) {
-                return response()->json(['message' => 'Admin created successfully.', 'redirect' => route('super_admin.admins.index')]);
-            }
+            // if ($request->wantsJson() || $request->ajax()) {
+            //     return response()->json(['message' => 'Admin created successfully.', 'redirect' => route('super_admin.admins.index')]);
+            // }
 
             return redirect()->route('super_admin.admins.index')->with('success', 'Admin created successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
             // fallback
-            if ($request->wantsJson() || $request->ajax()) {
-                return response()->json(['error' => 'Failed to create admin.'], 500);
-            }
+            // if ($request->wantsJson() || $request->ajax()) {
+            //     return response()->json(['error' => 'Failed to create admin.'], 500);
+            // }
             return redirect()->back()->with('error', 'Failed to create admin.');
         }
     }
