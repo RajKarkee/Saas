@@ -18,7 +18,12 @@
                 <small class="text-muted">Welcome, {{ $superAdmin->name }}</small>
             @endif
         </div>
-
+        {{-- Add Item Button --}}
+        <div>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">
+                <i class="fas fa-plus me-2"></i>Add Item
+            </button>
+        </div>
     </div>
 
     {{-- show buttons/stats greeting --}}
@@ -120,8 +125,13 @@
         {{-- Recent activities column --}}
         <div class="col-lg-6">
             <div class="content-card shadow-sm">
-                <div class="content-card-header">
+                <div class="content-card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="fas fa-stream me-2"></i>Recent Activities</h5>
+                    {{-- Activity Log Settings Button --}}
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+                        data-bs-target="#activityLogModal">
+                        <i class="fas fa-cog"></i> Settings
+                    </button>
                 </div>
                 <div class="content-card-body" style="max-height: 420px; overflow-y: auto;">
                     @if ($recentActivities->count())
@@ -220,6 +230,68 @@
                 @else
                     <div class="text-muted">No restaurants found.</div>
                 @endif
+            </div>
+        </div>
+    </div>
+
+    {{-- Add Item Modal --}}
+    <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addItemModalLabel">Add New Item</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Item Name</label>
+                            <input type="text" class="form-control" placeholder="Enter item name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Save Item</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Activity Log Settings Modal --}}
+    <div class="modal fade" id="activityLogModal" tabindex="-1" aria-labelledby="activityLogModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="activityLogModalLabel">Activity Log Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">Configure how system activities are recorded.</p>
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Log Retention (Days)</label>
+                            <input type="number" class="form-control" value="30">
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="logErrors" checked>
+                            <label class="form-check-label" for="logErrors">Log System Errors</label>
+                        </div>
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" id="logActions" checked>
+                            <label class="form-check-label" for="logActions">Log User Actions</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success">Save Settings</button>
+                </div>
             </div>
         </div>
     </div>

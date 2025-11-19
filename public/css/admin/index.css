@@ -286,6 +286,17 @@
   transition: background 0.2s;
 }
 
+.profile-menu-item-admin {
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #333;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.2s;
+}
+
 .profile-menu-item:last-child {
   border-bottom: none;
 }
