@@ -8,7 +8,7 @@ use App\Models\Admin;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Models\Adminphoto;
+use App\Models\AdminPhoto;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use App\Models\Restaurant;
@@ -205,7 +205,7 @@ class AdminController extends Controller
             $admin->save();
 
             // handle image removal or replacement
-            $adminPhoto = Adminphoto::firstOrNew(['admin_id' => $admin->id]);
+            $adminPhoto = AdminPhoto::firstOrNew(['admin_id' => $admin->id]);
             $oldPath = $adminPhoto->photo_path ?? null;
 
             if ($request->has('remove_image') && $request->input('remove_image') == '1') {
