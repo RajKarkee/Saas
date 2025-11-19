@@ -19,7 +19,7 @@ class LogoutController extends Controller
     {
         // Define all guards + their token/session keys
         $guards = [
-            'superadmin' => [
+            'super_admin' => [
                 
                 'model' => SuperAdmin::class,
                 'redirect' => route('logout.page')
