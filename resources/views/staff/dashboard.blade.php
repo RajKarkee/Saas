@@ -5,6 +5,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="mb-1">{{ $restaurant->name ?? 'Restaurant' }} - Staff Dashboard</h2>
+                <p class="mb-0">Welcome back, {{ $restaurant->id }}!</p>
                 <p class="text-muted mb-0">Manage orders and assign delivery personnel</p>
             </div>
             <div>
