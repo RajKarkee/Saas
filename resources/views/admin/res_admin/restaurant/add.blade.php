@@ -1,123 +1,7 @@
 @extends('admin.layout.app')
-@section('title', 'Restaurent_Admins/add')
+@section('title', 'Add Restaurant')
 @push('styles')
     <style>
-        .admin-form .form-label {
-            font-weight: 600;
-        }
-    </style>
-
-    <style>
-        /* small toast item styling for accessibility */
-        #toastContainer .toast-item {
-            opacity: 0.98;
-        }
-    </style>
-@endpush
-@section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0">Add Admin</h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="#">Admin</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Add Admin</li>
-                </ol>
-            </nav>
-        </div>
-    </div>
-    <div class="container admin-form">
-        <div class="content-card">
-            <div class="content-card-body">
-                <form action="{{ route('super_admin.admins.store') }}" method="POST" enctype="multipart/form-data"
-                    id="addadminForm">
-                    @csrf
-                    <div class="row g-4">
-                        <div class="col-lg-8">
-
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="owner" class="form-label">Owner Name</label>
-                                    <input type="text" class="form-control" id="owner" name="name" required
-                                        placeholder="Owner full name">
-                                    @error('name')
-                                        <div class="text-danger small">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="email" class="form-label">Owner Email</label>
-                                    <input type="email" class="form-control" id="email" name="email" required
-                                        placeholder="owner@example.com">
-                                    @error('email')
-                                        <div class="text-danger small">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="password" class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="password" name="password"
-                                        placeholder="Enter password">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="status" class="form-label">Status</label>
-                                    <select class="form-select" id="status" name="status">
-                                        <option value="active">Active</option>
-                                        <option value="pending">Pending</option>
-                                        <option value="inactive">Inactive</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <lable for="Restuarant Count">Restuarant Count*</lable>
-                                    <input type="number" class="form-control" id="restaurant_count" name="restaurant_count"
-                                        placeholder="Enter Restuarant Count">
-                                </div>
-                            </div>
-
-
-                            <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary">Add Admin</button>
-                                <a href="{{ route('super_admin.admins.index') }}"
-                                    class="btn btn-outline-secondary">Cancel</a>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-4">
-                            <div class="card p-3">
-                                <h6 class="mb-3">Admin Image</h6>
-
-                                <div id="imageDrop" class="image-drop p-3 text-center" tabindex="0">
-                                    <input type="file" id="imageInput" name="image" accept="image/*"
-                                        style="display:none">
-                                    <div class="image-preview" id="imagePreview">
-                                        <img src="data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20400%20300'><rect%20fill='%23f6f7fb'%20width='100%25'%20height='100%25'/><text%20x='50%25'%20y='50%25'%20dominant-baseline='middle'%20text-anchor='middle'%20fill='%23999'%20font-family='Arial'%20font-size='20'>No%20image</text></svg>"
-                                            alt="preview" id="previewImg">
-                                    </div>
-                                    <p class="small text-muted mt-2">Drag & drop an image here or <button type="button"
-                                            class="btn btn-link p-0" id="browseBtn">browse</button></p>
-                                    <p class="small text-muted">Supported: JPG, PNG. Max 5MB.</p>
-                                </div>
-                                <div class="mt-3 d-flex justify-content-between">
-                                    <div>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary"
-                                            id="removeImage">Remove</button>
-                                    </div>
-                                    <div>
-                                        <span class="text-muted small" id="imageInfo">No file selected</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    {{-- <style>
         .image-drop {
             border: 2px dashed #e9ecef;
             border-radius: .6rem;
@@ -154,7 +38,130 @@
             object-fit: cover;
             display: block;
         }
-    </style> --}}
+    </style>
+@endpush
+@section('content')
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Add Restaurant</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="#">Admin</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Add Restaurant</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <div class="container admin-form">
+        <div class="content-card">
+            <div class="content-card-body">
+                <form action="{{ route('super_admin.admins.restaurant.stores') }}" method="POST"
+                    enctype="multipart/form-data" id="addRestaurantForm">
+                    @csrf
+                    <div class="row g-4">
+                        <div class="col-lg-8">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="owner_id" class="form-label">Owner (Admin)</label>
+                                    <h2>{{ $validatedData['name'] }}</h2>
+
+                                </div>
+
+                                <input type="hidden" name="owner_name" value="{{ $validatedData['name'] }}">
+                                <input type="hidden" name="owner_email" value="{{ $validatedData['email'] }}">
+                                <input type="hidden" name="owner_status" value="{{ $validatedData['status'] }}">
+                                <input type="hidden" name="owner_password" value="{{ $validatedData['password'] }}">
+                                @if (!empty($validatedData['image']))
+                                    <input type="hidden" name="owner_image" value="{{ $validatedData['image'] }}">
+                                @endif
+                                <div class="col-md-6 mb-3">
+                                    <label for="name" class="form-label">Restaurant Name</label>
+                                    <input type="text" class="form-control" id="name" name="res_name" required
+                                        placeholder="Restaurant full name" value="{{ old('res_name') }}">
+                                    @error('res_name')
+                                        <div class="text-danger small">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="domain" class="form-label">Custom Domain</label>
+                                    <input type="text" class="form-control" id="domain" name="domain"
+                                        placeholder="example.com" value="{{ old('domain') }}">
+                                    @error('domain')
+                                        <div class="text-danger small">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="subdomain" class="form-label">Subdomain (optional)</label>
+                                    <input type="text" class="form-control" id="subdomain" name="subdomain"
+                                        placeholder="shop-name" value="{{ old('subdomain') }}">
+                                    @error('subdomain')
+                                        <div class="text-danger small">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Active
+                                        </option>
+                                        <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>
+                                            Inactive</option>
+                                        <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>Pending
+                                        </option>
+                                    </select>
+                                    @error('status')
+                                        <div class="text-danger small">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">Add Restaurant</button>
+                                <a href="{{ route('super_admin.restaurant.index') }}"
+                                    class="btn btn-outline-secondary">Cancel</a>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="card p-3">
+                                <h6 class="mb-3">Restaurant Logo</h6>
+
+                                <div id="imageDrop" class="image-drop p-3 text-center" tabindex="0">
+                                    <input type="file" id="imageInput" name="res_logo" accept="image/*"
+                                        style="display:none">
+                                    <div class="image-preview" id="imagePreview">
+                                        <img src="data:image/svg+xml;utf8,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20400%20300'><rect%20fill='%23f6f7fb'%20width='100%25'%20height='100%25'/><text%20x='50%25'%20y='50%25'%20dominant-baseline='middle'%20text-anchor='middle'%20fill='%23999'%20font-family='Arial'%20font-size='20'>No%20image</text></svg>"
+                                            alt="preview" id="previewImg">
+                                    </div>
+                                    <p class="small text-muted mt-2">Drag & drop an image here or <button type="button"
+                                            class="btn btn-link p-0" id="browseBtn">browse</button></p>
+                                    <p class="small text-muted">Supported: JPG, PNG. Max 5MB.</p>
+                                </div>
+                                <div class="mt-3 d-flex justify-content-between">
+                                    <div>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary"
+                                            id="removeImage">Remove</button>
+                                    </div>
+                                    <div>
+                                        <span class="text-muted small" id="imageInfo">No file selected</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+
     @push('scripts')
         <script>
             (function() {
@@ -164,7 +171,6 @@
                 const browseBtn = document.getElementById('browseBtn');
                 const removeBtn = document.getElementById('removeImage');
                 const imageInfo = document.getElementById('imageInfo');
-                const count = document.getElementById('restaurant_count');
 
                 function setPreview(file) {
                     if (!file) return;
@@ -199,7 +205,7 @@
                     setPreview(file);
                 });
 
-
+                // Drag & drop
                 ['dragenter', 'dragover'].forEach(evt => {
                     imageDrop.addEventListener(evt, function(e) {
                         e.preventDefault();
@@ -232,67 +238,11 @@
                     imageInfo.textContent = 'No file selected';
                 });
 
-                // Toast UI
-                function createToast(message, type = 'error') {
-                    const container = document.getElementById('toastContainer') || (() => {
-                        const c = document.createElement('div');
-                        c.id = 'toastContainer';
-                        c.style.position = 'fixed';
-                        c.style.top = '1rem';
-                        c.style.right = '1rem';
-                        c.style.zIndex = 9999;
-                        document.body.appendChild(c);
-                        return c;
-                    })();
-
-                    const t = document.createElement('div');
-                    t.className = 'toast-item ' + type;
-                    t.style.minWidth = '240px';
-                    t.style.marginTop = '8px';
-                    t.style.padding = '12px 14px';
-                    t.style.borderRadius = '8px';
-                    t.style.boxShadow = '0 6px 18px rgba(0,0,0,0.08)';
-                    t.style.color = '#fff';
-                    t.style.fontSize = '14px';
-                    t.style.display = 'flex';
-                    t.style.alignItems = 'center';
-                    t.style.justifyContent = 'space-between';
-                    if (type === 'error') t.style.background = 'linear-gradient(90deg,#ff6b6b,#ff3b3b)';
-                    else t.style.background = 'linear-gradient(90deg,#34d399,#10b981)';
-
-                    const span = document.createElement('div');
-                    span.textContent = message;
-                    t.appendChild(span);
-
-                    const close = document.createElement('button');
-                    close.textContent = '×';
-                    close.style.background = 'transparent';
-                    close.style.border = 'none';
-                    close.style.color = 'rgba(255,255,255,0.9)';
-                    close.style.fontSize = '18px';
-                    close.style.cursor = 'pointer';
-                    close.addEventListener('click', () => t.remove());
-                    t.appendChild(close);
-
-                    container.appendChild(t);
-                    setTimeout(() => t.remove(), 6000);
-                }
-
-                // AJAX submit
-                // document.getElementById('addadminForm').addEventListener('submit', function(e) {
+                // AJAX submit (graceful fallback to normal submit)
+                // document.getElementById('addRestaurantForm').addEventListener('submit', function(e) {
                 //     e.preventDefault();
                 //     const form = this;
                 //     const formData = new FormData(form);
-                //     const restaurantCount = parseInt(document.getElementById('restaurant_count').value, 10);
-                //     if (isNaN(restaurantCount) || restaurantCount < 1) {
-                //         createToast('Restaurant count must be at least 1', 'error');
-                //         return;
-                //     }
-                //     // basic client-side checks
-                //     if (!formData.get('name') || !formData.get('email')) {
-                //         createToast('Please fill required fields', 'error');
-                //         return;
-                //     }
 
                 //     fetch(form.action, {
                 //         method: 'POST',
@@ -307,20 +257,30 @@
                 //         if (!res.ok) {
                 //             if (res.status === 422 && data.errors) {
                 //                 const first = Object.values(data.errors)[0][0];
-                //                 createToast(first, 'error');
+                //                 alert(first);
                 //             } else {
-                //                 createToast(data.error || 'An error occurred', 'error');
+                //                 alert(data.error || 'An error occurred');
                 //             }
                 //             return;
                 //         }
-                //         createToast(data.message || 'Admin created', 'success');
+                //         alert(data.message || 'Restaurant created');
                 //         if (data.redirect) setTimeout(() => window.location = data.redirect, 900);
                 //     }).catch(err => {
                 //         console.error(err);
-                //         createToast('Failed to submit. Try again.', 'error');
+                //         alert('Failed to submit. Try again.');
                 //     });
                 // });
             })();
+
+            $(document).ready(function() {
+
+                $('#owner_id').select2({
+                    theme: 'bootstrap-5',
+                    placeholder: '-- Select Owner --',
+                    allowClear: true,
+                    width: '100%'
+                });
+            });
         </script>
     @endpush
 @endsection

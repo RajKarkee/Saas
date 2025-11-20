@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Restaurant;
 use App\Models\AdminRestaurant;
 use Illuminate\Support\Facades\Auth;
+use App\Models\RestaurantSetting;
 
 class AdminController extends Controller
 {
@@ -118,53 +119,113 @@ class AdminController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        
         $validatedData = $validator->validated();
+  
+        return view('admin.res_admin.restaurant.add',compact('validatedData'));
 
-        DB::beginTransaction();
-        try {
-            $admin = new Admin();
-            $admin->name = $validatedData['name'];
-            $admin->email = $validatedData['email'];
-            $admin->password = Hash::make($validatedData['password']);
-            $admin->status = $validatedData['status'];
-            $admin->save();
+        // DB::beginTransaction();
+        // try {
+        //     $admin = new Admin();
+        //     $admin->name = $validatedData['name'];
+        //     $admin->email = $validatedData['email'];
+        //     $admin->password = Hash::make($validatedData['password']);
+        //     $admin->status = $validatedData['status'];
+        //     $admin->save();
 
-            if (!empty($validatedData['image']) && $request->hasFile('image')) {
-                $path = $request->file('image')->store('admin/image', 'public');
-                $adminPhoto = new Adminphoto();
-                $adminPhoto->admin_id = $admin->id;
-                $adminPhoto->photo_path = $path;
-                $adminPhoto->save();
-            }
-            else{
-                $adminPhoto = new Adminphoto();
-                $adminPhoto->admin_id = $admin->id;
+        //     if (!empty($validatedData['image']) && $request->hasFile('image')) {
+        //         $path = $request->file('image')->store('admin/image', 'public');
+        //         $adminPhoto = new Adminphoto();
+        //         $adminPhoto->admin_id = $admin->id;
+        //         $adminPhoto->photo_path = $path;
+        //         $adminPhoto->save();
+        //     }
+        //     else{
+        //         $adminPhoto = new Adminphoto();
+        //         $adminPhoto->admin_id = $admin->id;
             
-                $adminPhoto->save();
-            }
+        //         $adminPhoto->save();
+        //     }
 
-            if (array_key_exists('restaurant_count', $validatedData)) {
-                $adminRestaurant = new AdminRestaurant();
-                $adminRestaurant->admin_id = $admin->id;
-                $adminRestaurant->restaurant_count = $validatedData['restaurant_count'];
-                $adminRestaurant->save();
-            }
+        //     if (array_key_exists('restaurant_count', $validatedData)) {
+        //         $adminRestaurant = new AdminRestaurant();
+        //         $adminRestaurant->admin_id = $admin->id;
+        //         $adminRestaurant->restaurant_count = $validatedData['restaurant_count'];
+        //         $adminRestaurant->save();
+        //     }
 
-            DB::commit();
 
-            // if ($request->wantsJson() || $request->ajax()) {
-            //     return response()->json(['message' => 'Admin created successfully.', 'redirect' => route('super_admin.admins.index')]);
-            // }
+        //     DB::commit();
 
-            return redirect()->route('super_admin.admins.index')->with('success', 'Admin created successfully.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            // fallback
-            // if ($request->wantsJson() || $request->ajax()) {
-            //     return response()->json(['error' => 'Failed to create admin.'], 500);
-            // }
-            return redirect()->back()->with('error', 'Failed to create admin.');
+        //     // if ($request->wantsJson() || $request->ajax()) {
+        //     //     return response()->json(['message' => 'Admin created successfully.', 'redirect' => route('super_admin.admins.index')]);
+        //     // }
+
+        //     return redirect()->route('super_admin.admins.index')->with('success', 'Admin created successfully.');
+        // } catch (\Exception $e) {
+        //     DB::rollBack();
+        //     // fallback
+        //     // if ($request->wantsJson() || $request->ajax()) {
+        //     //     return response()->json(['error' => 'Failed to create admin.'], 500);
+        //     // }
+        //     return redirect()->back()->with('error', 'Failed to create admin.');
+        // }
+    }
+    public function restaurantStore(Request $request)
+    {
+
+  
+        $res_validator=validator::make($request->all(), [
+            'res_name' => 'required|string|max:255',
+            'res_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'domain' => 'required|string|max:255|unique:restaurants,domain',
+            'subdomain'=>'nullable|string|max:255',
+            'status' => 'required|in:active,inactive,pending',
+        ]);
+        if($res_validator->fails()){
+            return redirect()->back()->withErrors($res_validator)->withInput();
         }
+        $res_data=$res_validator->validated();
+     DB::beginTransaction();
+     try { $admin=new Admin();
+        $admin->name = $request->owner_name;
+        $admin->email = $request->owner_email;
+        $admin->password = Hash::make($request->owner_password);
+        $admin->status = $request->owner_status;
+        $admin->save();
+        if($request->hasFile('owner_image')){
+            $path = $request->file('owner_image')->store('admin/image', 'public');
+            $adminPhoto = new AdminPhoto();
+            $adminPhoto->admin_id = $admin->id;
+            $adminPhoto->photo_url = $path;
+            $adminPhoto->save();
+        }
+
+        $restaurant = new Restaurant();
+        $restaurant->name = $res_data['res_name'];
+        $restaurant->domain = $res_data['domain'];
+        $restaurant->subdomain = $res_data['subdomain'];
+        $restaurant->owner_id = $admin->id;
+        $restaurant->status = $res_data['status'];
+        $restaurant->save();
+        if($request->hasFile('res_logo')){
+            $path = $request->file('res_logo')->store('restaurant/logo', 'public');
+            $restaurant->logo_path = $path;
+            $restaurantSetting=new RestaurantSetting();
+            $restaurantSetting->restaurant_id = $restaurant->id;
+            $restaurantSetting->logo=$path;
+            $restaurantSetting->save();
+        }
+        DB::commit();
+        return redirect()->route('super_admin.admins.index')->with('success', 'Admin and Restaurant created successfully.');
+     } catch (\Exception $e) {
+        DB::rollBack();
+        return redirect()->back()->with('error', 'Failed to create Admin and Restaurant.')->withInput();
+     }
+
+
+        
+    //     return view('admin.res_admin.restaurant.add',compact('validatedData'));
     }
     public function edit($id)
     {

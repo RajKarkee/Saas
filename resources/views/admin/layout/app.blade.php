@@ -18,6 +18,8 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
     <link rel="stylesheet" href="{{ asset('css/admin/index.css') }}">
     {{-- <style>
         .profile-modal-overlay {
@@ -267,16 +269,16 @@
 </head>
 
 <body>
-    <!-- Sidebar -->
+
     @include('admin.layout.sidebar')
 
 
-    <!-- Mobile Overlay -->
+
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <!-- Main Content -->
+    >
     <div class="admin-content">
-        <!-- Top Navbar -->
+
         <nav class="admin-navbar">
             <div class="navbar-left">
                 <button class="navbar-toggle" id="sidebarToggle">
@@ -290,13 +292,13 @@
             </div>
 
             <div class="navbar-right">
-                <!-- Notifications -->
+
                 <div class="navbar-icon" id="notificationsIcon">
                     <i class="fas fa-bell"></i>
                     <span class="badge bg-danger">3</span>
                 </div>
 
-                <!-- Messages -->
+
                 <div class="navbar-icon" id="messagesIcon">
                     <i class="fas fa-envelope"></i>
                     <span class="badge bg-success">5</span>
@@ -428,159 +430,157 @@
         </div>
     </div>
 
-</body>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-
-<script>
-    $(document).ready(function() {
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 
-        // ============ Sidebar Toggle ============
-        $('#sidebarToggle').on('click', function() {
-            const sidebar = $('#adminSidebar');
-            const isMobile = $(window).width() < 768;
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-            if (isMobile) {
-                sidebar.toggleClass('mobile-show');
-                $('#sidebarOverlay').toggleClass('show');
-            } else {
-                sidebar.toggleClass('collapsed');
-            }
-        });
+    <script>
+        $(document).ready(function() {
 
-        // Close sidebar when clicking overlay (mobile)
-        $('#sidebarOverlay').on('click', function() {
-            $('#adminSidebar').removeClass('mobile-show');
-            $(this).removeClass('show');
-        });
 
-        // Close sidebar on mobile when clicking a link
-        $('.sidebar-nav .nav-link').on('click', function() {
-            if ($(window).width() < 768 && !$(this).hasClass('nav-dropdown-toggle')) {
+            $('#sidebarToggle').on('click', function() {
+                const sidebar = $('#adminSidebar');
+                const isMobile = $(window).width() < 768;
+
+                if (isMobile) {
+                    sidebar.toggleClass('mobile-show');
+                    $('#sidebarOverlay').toggleClass('show');
+                } else {
+                    sidebar.toggleClass('collapsed');
+                }
+            });
+
+
+            $('#sidebarOverlay').on('click', function() {
                 $('#adminSidebar').removeClass('mobile-show');
-                $('#sidebarOverlay').removeClass('show');
-            }
-        });
+                $(this).removeClass('show');
+            });
 
-        // ============ Sidebar Dropdowns ============
-        $('.nav-dropdown-toggle').on('click', function(e) {
-            e.preventDefault();
-            const parent = $(this).closest('.nav-dropdown');
-            const allDropdowns = $('.nav-dropdown');
 
-            // Close other dropdowns
-            allDropdowns.not(parent).removeClass('open');
+            $('.sidebar-nav .nav-link').on('click', function() {
+                if ($(window).width() < 768 && !$(this).hasClass('nav-dropdown-toggle')) {
+                    $('#adminSidebar').removeClass('mobile-show');
+                    $('#sidebarOverlay').removeClass('show');
+                }
+            });
 
-            // Toggle current dropdown
-            parent.toggleClass('open');
-        });
-
-        // ============ Profile Dropdown ============
-        $('#profileDropdown').on('click', function(e) {
-            e.stopPropagation();
-            $('#profileMenu').toggleClass('show');
-        });
-
-        // Close profile menu when clicking outside
-        $(document).on('click', function(e) {
-            if (!$(e.target).closest('#profileDropdown').length) {
-                $('#profileMenu').removeClass('show');
-            }
-        });
-        $('.profile-menu-item-admin').on('click', function(e) {
-            e.preventDefault();
-            $('#profileModal').fadeIn();
-        });
-        $('#closeProfileModal-admin').on('click', function() {
-            $('#profileModal').fadeOut();
-        });
-
-        $(window).click(function(e) {
-            if ($(e.target).is('#profileModal')) {
-                $('#profileModal').fadeOut();
-            }
-        });
-
-        $(document).on('keydown', function(e) {
-            if (e.key === 'Escape') {
-                $('.modal:visible').hide().attr('aria-hidden', 'true');
-            }
-        });
-
-        // ============ Active Link Highlighting ============
-        // Get current page URL
-        const currentUrl = window.location.href;
-        $('.sidebar-nav .nav-link').each(function() {
-            const linkUrl = $(this).attr('href');
-            if (linkUrl && linkUrl !== '#' && currentUrl.includes(linkUrl)) {
-                // Remove active from all links
-                $('.sidebar-nav .nav-link').removeClass('active');
-                // Add active to current link
-                $(this).addClass('active');
-                // Open parent dropdown if exists
-                $(this).closest('.nav-dropdown').addClass('open');
-            }
-        });
-
-        // ============ Smooth Scroll ============
-        $('a[href^="#"]').on('click', function(e) {
-            const target = $(this.getAttribute('href'));
-            if (target.length) {
+            $('.nav-dropdown-toggle').on('click', function(e) {
                 e.preventDefault();
-                $('html, body').stop().animate({
-                    scrollTop: target.offset().top - 70
-                }, 600);
-            }
-        });
+                const parent = $(this).closest('.nav-dropdown');
+                const allDropdowns = $('.nav-dropdown');
 
-        // ============ Responsive Sidebar ============
-        $(window).on('resize', function() {
-            if ($(window).width() >= 768) {
-                $('#adminSidebar').removeClass('mobile-show');
-                $('#sidebarOverlay').removeClass('show');
-            }
-        });
+                // Close other dropdowns
+                allDropdowns.not(parent).removeClass('open');
 
-        // ============ Notification Click Handler ============
-        $('#notificationsIcon').on('click', function() {
-            alert('Notifications feature coming soon!');
-        });
+                // Toggle current dropdown
+                parent.toggleClass('open');
+            });
 
-        $('#messagesIcon').on('click', function() {
-            alert('Messages feature coming soon!');
-        });
+            // ============ Profile Dropdown ============
+            $('#profileDropdown').on('click', function(e) {
+                e.stopPropagation();
+                $('#profileMenu').toggleClass('show');
+            });
 
-        // Open profile modal
-        $(document).on('click', '[data-modal-target="#profileModal"]', function(e) {
-            e.preventDefault();
-            $('#profileModal').addClass('show').attr('aria-hidden', 'false');
-        });
+            // Close profile menu when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('#profileDropdown').length) {
+                    $('#profileMenu').removeClass('show');
+                }
+            });
+            $('.profile-menu-item-admin').on('click', function(e) {
+                e.preventDefault();
+                $('#profileModal').fadeIn();
+            });
+            $('#closeProfileModal-admin').on('click', function() {
+                $('#profileModal').fadeOut();
+            });
 
-        // Close modal handlers
-        $('#closeProfileModal, #closeProfileModalBtn').on('click', function() {
-            $('#profileModal').removeClass('show').attr('aria-hidden', 'true');
-        });
+            $(window).click(function(e) {
+                if ($(e.target).is('#profileModal')) {
+                    $('#profileModal').fadeOut();
+                }
+            });
 
-        // Close when clicking overlay
-        $(document).on('click', '#profileModal', function(e) {
-            if (e.target === this) {
-                $(this).removeClass('show').attr('aria-hidden', 'true');
-            }
-        });
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    $('.modal:visible').hide().attr('aria-hidden', 'true');
+                }
+            });
 
-        // Close on ESC key
-        $(document).on('keydown', function(e) {
-            if (e.key === 'Escape') {
-                $('#profileModal.show').removeClass('show').attr('aria-hidden', 'true');
-            }
+
+
+            const currentUrl = window.location.href;
+            $('.sidebar-nav .nav-link').each(function() {
+                const linkUrl = $(this).attr('href');
+                if (linkUrl && linkUrl !== '#' && currentUrl.includes(linkUrl)) {
+                    // Remove active from all links
+                    $('.sidebar-nav .nav-link').removeClass('active');
+                    // Add active to current link
+                    $(this).addClass('active');
+                    // Open parent dropdown if exists
+                    $(this).closest('.nav-dropdown').addClass('open');
+                }
+            });
+
+
+            $('a[href^="#"]').on('click', function(e) {
+                const target = $(this.getAttribute('href'));
+                if (target.length) {
+                    e.preventDefault();
+                    $('html, body').stop().animate({
+                        scrollTop: target.offset().top - 70
+                    }, 600);
+                }
+            });
+
+
+            $(window).on('resize', function() {
+                if ($(window).width() >= 768) {
+                    $('#adminSidebar').removeClass('mobile-show');
+                    $('#sidebarOverlay').removeClass('show');
+                }
+            });
+
+
+            $('#notificationsIcon').on('click', function() {
+                alert('Notifications feature coming soon!');
+            });
+
+            $('#messagesIcon').on('click', function() {
+                alert('Messages feature coming soon!');
+            });
+
+
+            $(document).on('click', '[data-modal-target="#profileModal"]', function(e) {
+                e.preventDefault();
+                $('#profileModal').addClass('show').attr('aria-hidden', 'false');
+            });
+
+
+            $('#closeProfileModal, #closeProfileModalBtn').on('click', function() {
+                $('#profileModal').removeClass('show').attr('aria-hidden', 'true');
+            });
+
+
+            $(document).on('click', '#profileModal', function(e) {
+                if (e.target === this) {
+                    $(this).removeClass('show').attr('aria-hidden', 'true');
+                }
+            });
+
+
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    $('#profileModal.show').removeClass('show').attr('aria-hidden', 'true');
+                }
+            });
         });
-    });
-</script>
-@stack('scripts')
+    </script>
+    @stack('scripts')
+</body>
 
 </html>

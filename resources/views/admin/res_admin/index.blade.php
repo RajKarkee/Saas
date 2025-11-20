@@ -3,7 +3,7 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-0">Restaurants</h1>
+            <h1 class="h3 mb-0">Admins</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="#">Admin</a></li>
@@ -83,20 +83,18 @@
     </div>
 @endsection
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $('#admin_restaurant_table').DataTable({
-            responsive: true,
-            pageLength: 10,
-            lengthChange: true,
-            searching: true,
-            ordering: true,
-            info: true,
-            autoWidth: false,
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            $('#admin_restaurant_table').DataTable({
+                responsive: true,
+                pageLength: 10,
+                lengthChange: true,
+                searching: true,
+                ordering: true,
+                info: true,
+                autoWidth: false,
+            });
         });
-    });
-</script>
+    </script>
+@endpush

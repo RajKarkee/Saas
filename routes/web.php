@@ -58,6 +58,7 @@ Route::prefix('super_admin')->middleware(['auth:super_admin'])->name('super_admi
         Route::get('/edit/{id}', [SuperAdminadminController::class, 'edit'])->name('edit');
         Route::put('/update/{id}', [SuperAdminadminController::class, 'update'])->name('update');
         Route::delete('/destroy/{id}', [SuperAdminadminController::class, 'destroy'])->name('destroy');
+        Route::post('/restaurant-store/admin', [SuperAdminadminController::class, 'restaurantStore'])->name('restaurant.stores');
     });
     Route::prefix('restaurant')->name('restaurant.')->group(function () {
         Route::match(['get', 'post'], '/index', [SuperAdminRestaurantController::class, 'index']

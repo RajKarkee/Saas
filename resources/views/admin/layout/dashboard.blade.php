@@ -70,9 +70,9 @@
         </div>
     </div>
 
-    <!-- Content Cards -->
+
     <div class="row">
-        {{-- Pending card widened and restyled --}}
+
         <div class="col-lg-6">
             <div class="content-card shadow-sm">
                 <div class="content-card-header d-flex justify-content-between align-items-center">
@@ -299,11 +299,6 @@
 @endsection
 
 @push('styles')
-    {{-- DataTables CSS --}}
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
-
-    {{-- Custom quick style improvements for modern look --}}
     <style>
         .stats-grid {
             display: flex;
@@ -374,11 +369,6 @@
 @endpush
 
 @push('scripts')
-    {{-- DataTables & dependencies --}}
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-
     <script>
         $(document).ready(function() {
             var table = $('#restaurants-table').DataTable({
@@ -393,7 +383,7 @@
                     targets: -1
                 }],
                 createdRow: function(row, data, dataIndex) {
-                    // data[3] is the Restaurant Status column - update index if markup changes
+
                     var statusCell = $('td:eq(3)', row);
                     if (statusCell.length && statusCell.text().toLowerCase().includes('pending')) {
                         $(row).addClass('table-warning');
