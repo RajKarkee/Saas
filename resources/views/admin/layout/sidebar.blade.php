@@ -128,12 +128,12 @@
                                 <span class="nav-text">All Restaurants</span>
                             </a>
                         </li>
-                        <li class="nav-item">
+                        {{-- <li class="nav-item">
                             <a href="{{ route('super_admin.restaurant.create') }}" class="nav-link">
                                 <i class="fas fa-plus-circle"></i>
                                 <span class="nav-text">Add Restaurant</span>
                             </a>
-                        </li>
+                        </li> --}}
                         <li class="nav-item">
                             <a href="{{ route('super_admin.restaurant.pending') }}" class="nav-link">
                                 <i class="fas fa-clock"></i>
