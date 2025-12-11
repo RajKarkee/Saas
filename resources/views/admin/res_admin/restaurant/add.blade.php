@@ -55,7 +55,7 @@
     <div class="container admin-form">
         <div class="content-card">
             <div class="content-card-body">
-                <form action="{{ route('super_admin.admins.restaurant.stores') }}" method="POST"
+                <form action="{{ route('super_admin.admins.restaurant.stores') }}" m ethod="POST"
                     enctype="multipart/form-data" id="addRestaurantForm">
                     @csrf
                     <div class="row g-4">
