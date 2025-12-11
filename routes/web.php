@@ -79,6 +79,8 @@ Route::prefix('super_admin')->middleware(['auth:super_admin'])->name('super_admi
 Route::prefix('admin')->middleware(['auth:admin'])->name('admin.')->group(function () {
     Route::post('/logout', [AdminLogin::class, 'logout'])->name('logout');
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::match(['get', 'put'], '/profile', [AdminDashboardController::class, 'profile']
+    )->name('profile');
     Route::prefix('/restaurants')->name('restaurant.')->group(function () {
         Route::post('/store', [AdminDashboardController::class, 'store'])->name('store');
         Route::get('/edit', [AdminRestaurantController::class, 'edit'])->name('edit');

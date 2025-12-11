@@ -36,9 +36,9 @@
               <i class="fas fa-chevron-down d-none d-md-block"></i>
           </div>
           <div class="profile-menu" id="profileMenu">
-              <a href="#">Profile</a>
-              <a href="#">Settings</a>
-              <a href="#">Activity Log</a>
+              <a href="{{ route('admin.profile') }}">Profile</a>
+              <a href="{{ route('admin.restaurant.settings') }}">Settings</a>
+
               <div style="height:1px;background:#e9ecef;margin:0.25rem 0"></div>
               <a href="#" id="logoutLink">Logout</a>
           </div>
