@@ -374,7 +374,10 @@ public function staffStore(Request $request)
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'position' => ['nullable', 'integer', 'min:1','unique:menu_categories,position,except,id'],
+            'position' => ['nullable', 'integer', 'min:1',
+            Rule::unique('menu_categories', 'position')->where(function($query) use ($request, $restaurant) {
+                return $query->where('restaurant_id', $restaurant->id);
+            }   )],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
@@ -408,7 +411,11 @@ public function staffStore(Request $request)
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'position' => ['nullable', 'integer', 'min:1','unique:menu_categories,position,'.$category->id],
+            'position' => ['nullable', 'integer', 'min:1',
+            Rule::unique('menu_categories','position')->where(function($query) use ($category, $restaurant) {
+                return $query->where('restaurant_id', $restaurant->id)
+                             ->where('id', '!=', $category->id);
+            }   )], 
             'is_active' => ['nullable', 'boolean'],
         ]);
 
@@ -646,5 +653,17 @@ public function staffStore(Request $request)
         $addon->save();
         
         return redirect()->route('admin.restaurant.menu.items.addons.index', $item->id)->with('success', 'Addon updated successfully.');
+    }
+    public function addonDestroy(Request $request, $id){
+  
+
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
+
+        $addon = MenuItemAddon::findOrFail($id);
+        $item = MenuItem::findOrFail($addon->menu_item_id);
+
+        $addon->delete();
+
+        return redirect()->route('admin.restaurant.menu.items.addons.index', $item->id)->with('success', 'Addon deleted successfully.');
     }
 }

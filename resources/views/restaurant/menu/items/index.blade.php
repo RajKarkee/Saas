@@ -61,17 +61,21 @@
                                     <td>{{ $it->stock_quantity }}</td>
                                     <td>
                                         <a href="{{ route('admin.restaurant.menu.items.edit', $it->id) }}"
-                                            class="btn btn-sm btn-outline-secondary me-1"><i class="fas fa-edit"></i></a>
+                                            class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="tooltip"
+                                            data-bs-placement='bottom' title="Edit"><i class="fas fa-edit"></i></a>
                                         <form method="post"
                                             action="{{ route('admin.restaurant.menu.items.destroy', $it->id) }}"
                                             style="display:inline;">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="btn btn-sm btn-outline-danger btn-delete"><i
+                                            <button class="btn btn-sm btn-outline-danger btn-delete" type='submit'
+                                                data-bs-toggle="tooltip" data-bs-placement='bottom' title='Delete'><i
                                                     class="fas fa-trash"></i></button>
                                         </form>
                                         <a href="{{ route('admin.restaurant.menu.items.addons.index', $it->id) }}"
-                                            class="btn btn-sm btn-outline-info"><i class="fas fa-list"></i></a>
+                                            class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip"
+                                            data-bs-placement="bottom" title="Add addon to this item"><i
+                                                class="fas fa-list"></i></a>
                                     </td>
                                 </tr>
                             @endforeach
@@ -84,10 +88,22 @@
 @endsection
 
 @push('scripts')
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {{-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
-    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script> --}}
     <script>
+        $(document).ready(function() {
+            $('#items_table').DataTable({
+                "pageLength": 10,
+                "lengthMenu": [5, 10, 25, 50, 100],
+                "columnDefs": [{
+                    "orderable": false,
+                    "targets": [1, 7] // Disable ordering on Image and Actions columns
+                }]
+            });
+        });
+    </script>
+    {{-- <script>
         function createToast(message, type = 'error') {
             const container = document.getElementById('toastContainer') || (function() {
                 const c = document.createElement('div');
@@ -130,6 +146,10 @@
             container.appendChild(t);
             setTimeout(() => t.remove(), 6000);
         }
+
+
+
+        // Show server flash messages as toasts
         $(document).ready(function() {
             // show server flash messages
             @if (session('success'))
@@ -142,8 +162,11 @@
                 createToast({!! json_encode($errors->first()) !!}, 'error');
             @endif
 
-            $('#items_table').DataTable({
-                responsive: true
+
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll(
+                '[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
             });
 
             // $(document).on('click', '.btn-delete', function() {
@@ -167,5 +190,9 @@
             //         }).catch(() => createToast('Failed', 'error'));
             // });
         });
-    </script>
+        // const tooltipTriggerList = [].slice.call(document.querySelectorAll(
+        //             '[data-bs-toggle="tooltip"]') tooltipTriggerList.map(function(tooltipTriggerEl) {
+        //             return new bootstrap.Tooltip(tooltipTriggerEl)
+        //         });
+    </script> --}}
 @endpush

@@ -4,6 +4,7 @@
         {{-- Toast container for flash messages --}}
         <div id="toastContainer" aria-live="polite" aria-atomic="true" style="position:fixed;top:1rem;right:1rem;z-index:9999;">
         </div>
+
         <div class="d-flex align-items-center justify-content-between mb-4">
             <div>
                 <h2 class="mb-1 fw-semibold">Menu Categories</h2>
@@ -37,18 +38,31 @@
                                     <td>{{ $cat->position }}</td>
                                     <td>{{ $cat->is_active ? 'Yes' : 'No' }}</td>
                                     <td>
+                                        {{-- Edit Button --}}
                                         <a href="{{ route('admin.restaurant.menu.categories.edit', $cat->id) }}"
-                                            class="btn btn-sm btn-outline-secondary me-1"><i class="fas fa-edit"></i></a>
+                                            class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="tooltip"
+                                            data-bs-placement="bottom" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+
+
                                         <form method="post"
                                             action="{{ route('admin.restaurant.menu.categories.destroy', $cat->id) }}"
                                             style="display:inline;">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="btn btn-sm btn-outline-danger btn-delete"><i
-                                                    class="fas fa-trash"></i></button>
+                                            <button class="btn btn-sm btn-outline-danger btn-delete" type="submit"
+                                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
                                         </form>
+
+
                                         <a href="{{ route('admin.restaurant.menu.items.index', $cat->id) }}"
-                                            class="btn btn-sm btn-outline-info"><i class="fas fa-list"></i></a>
+                                            class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip"
+                                            data-bs-placement="bottom" title="Add items to this category">
+                                            <i class="fas fa-list"></i>
+                                        </a>
                                     </td>
                                 </tr>
                             @endforeach
@@ -61,9 +75,13 @@
 @endsection
 
 @push('scripts')
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {{-- jQuery & DataTables --}}
+    {{-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
-    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script> --}}
+
+    {{-- Bootstrap JS for tooltips (ensure Bootstrap is loaded) --}}
+    {{-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> --}}
 
     <script>
         function createToast(message, type = 'error') {
@@ -91,11 +109,18 @@
         }
 
         $(document).ready(function() {
+            // Initialize DataTable
             $('#categories_table').DataTable({
                 responsive: true
             });
 
-            // show server flash messages as toasts
+            // Initialize Bootstrap tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+
+            // Show server flash messages as toasts
             @if (session('success'))
                 createToast({!! json_encode(session('success')) !!}, 'success');
             @endif
@@ -105,8 +130,6 @@
             @if ($errors->any())
                 createToast({!! json_encode($errors->first()) !!}, 'error');
             @endif
-
-
         });
     </script>
 @endpush

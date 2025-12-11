@@ -1,6 +1,8 @@
 @extends('restaurant.layout.app')
 @section('content')
     <div class="container-fluid py-4">
+        <div id="toastContainer" aria-live="polite" aria-atomic="true" style="position:fixed;top:1rem;right:1rem;z-index:9999;">
+        </div>
         <div class="d-flex align-items-center justify-content-between mb-4">
             <div>
                 <h2 class="mb-1 fw-semibold">Menu Addons for {{ $item->name }}</h2>
@@ -48,10 +50,17 @@
                                     <td>{{ $a->max_select }}</td>
                                     <td>
                                         <a href="{{ route('admin.restaurant.menu.items.addons.edit', $a->id) }}"
-                                            class="btn btn-sm btn-outline-secondary me-1"><i class="fas fa-edit"></i></a>
-                                        <button class="btn btn-sm btn-outline-danger btn-delete"
-                                            data-action="{{ route('admin.restaurant.menu.items.addons.destroy', $a->id) }}"><i
-                                                class="fas fa-trash"></i></button>
+                                            class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="tooltip"
+                                            data-bs-placement="bottom" title="Edit"><i class="fas fa-edit"></i></a>
+                                        <form method="POST"
+                                            action="{{ route('admin.restaurant.menu.items.addons.destroy', $a->id) }}"
+                                            style="display:inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-sm btn-outline-danger btn-delete"
+                                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Delete"><i
+                                                    class="fas fa-trash"></i></button>
+                                        </form>
                                     </td>
                                 </tr>
                             @endforeach
@@ -64,32 +73,15 @@
 @endsection
 
 @push('scripts')
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {{-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
-    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script> --}}
     <script>
         $(document).ready(function() {
             $('#addons_table').DataTable({
                 responsive: true
             });
-            $(document).on('click', '.btn-delete', function() {
-                if (!confirm('Delete this addon?')) return;
-                const action = this.dataset.action;
-                fetch(action, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: (new FormData()).append('_method', 'DELETE') || new FormData()
-                    })
-                    .then(r => r.json().catch(() => ({}))).then(data => {
-                        if (!data || data.status === 'error') {
-                            alert(data.message || 'Failed');
-                            return;
-                        }
-                        $(this).closest('tr').remove();
-                    }).catch(() => alert('Failed'));
-            });
+
         });
     </script>
 @endpush

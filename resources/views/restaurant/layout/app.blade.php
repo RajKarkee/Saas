@@ -147,10 +147,15 @@
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     @stack('scripts')
+    <script>
+        const csrfToken = '{{ csrf_token() }}';
+    </script>
+    <script src="{{ asset('js/toaster/custom.js') }}"></script>
     <script>
         $(document).ready(function() {
             // Sidebar Toggle
