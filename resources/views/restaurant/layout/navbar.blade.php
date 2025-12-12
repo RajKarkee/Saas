@@ -21,8 +21,8 @@
               <span class="badge-notification">3</span>
           </div>
           <div class="profile-dropdown">
-              <img src="{{ $adminImage ?? 'Admin') . '&background=4e73df&color=fff' }}"
-                  alt="Profile" class="profile-img">
+              <img src="{{ $adminImage ?? 'Admin' . '&background=4e73df&color=fff' }}" alt="Profile"
+                  class="profile-img">
               {{-- <div class="d-none d-md-block">
                     <div style="font-weight: 600; font-size: 0.9rem;">{{ Auth::user()->name }}</div>
                     @if (Auth::user()->role == 0)

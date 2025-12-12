@@ -13,7 +13,7 @@
 
         <nav aria-label="breadcrumb" class="mb-3">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Orders</li>
             </ol>
         </nav>
@@ -47,8 +47,10 @@
                                     <td>{{ \Carbon\Carbon::parse($o->order_date ?? $o->created_at)->format('Y-m-d H:i') }}
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-secondary btn-view"
-                                            data-id="{{ $o->id }}">View</button>
+                                        <a class="btn btn-sm btn-outline-secondary"
+                                            href="{{ route('admin.restaurant.orders.show', $o->id) }}">
+                                            View
+                                        </a>
                                     </td>
                                 </tr>
                             @endforeach
@@ -123,11 +125,7 @@
                 responsive: true
             });
 
-            $(document).on('click', '.btn-view', function() {
-                const id = this.dataset.id;
-                // Placeholder: open detail modal or navigate to detail view when implemented
-                createToast('Open details for order #' + id, 'success');
-            });
+            // View buttons now navigate via link
         });
     </script>
 @endpush

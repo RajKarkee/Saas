@@ -46,9 +46,11 @@
                                             <td>{{ ucfirst($member->status ?? 'inactive') }}</td>
                                             <td>
                                                 <a href="{{ route('admin.restaurant.staff.edit', $member->id) }}"
-                                                    class="btn btn-sm btn-outline-secondary me-1"><i
+                                                    class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="tooltip"
+                                                    data-bs-placement="bottom" title="Edit"><i
                                                         class="fas fa-edit"></i></a>
                                                 <button type="button" class="btn btn-sm btn-outline-danger btn-delete"
+                                                    data-bs-toggle="tooltip" data-bs-placement="bottom" title="Delete"
                                                     data-action="{{ route('admin.restaurant.staff.destroy', $member->id) }}">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
@@ -66,7 +68,7 @@
         <!-- jQuery first -->
     @endsection
     @push('scripts')
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        {{-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
         <!-- DataTables JS -->
         <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
@@ -74,54 +76,54 @@
 
         <!-- Optional: Responsive extension -->
         <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
-        <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+        <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script> --}}
 
         <!-- Toast helper + DataTables init -->
         <script>
-            function createToast(message, type = 'error') {
-                const container = document.getElementById('toastContainer') || (function() {
-                    const c = document.createElement('div');
-                    c.id = 'toastContainer';
-                    c.style.position = 'fixed';
-                    c.style.top = '1rem';
-                    c.style.right = '1rem';
-                    c.style.zIndex = 9999;
-                    document.body.appendChild(c);
-                    return c;
-                })();
+            // function createToast(message, type = 'error') {
+            //     const container = document.getElementById('toastContainer') || (function() {
+            //         const c = document.createElement('div');
+            //         c.id = 'toastContainer';
+            //         c.style.position = 'fixed';
+            //         c.style.top = '1rem';
+            //         c.style.right = '1rem';
+            //         c.style.zIndex = 9999;
+            //         document.body.appendChild(c);
+            //         return c;
+            //     })();
 
-                const t = document.createElement('div');
-                t.className = 'toast-item ' + type;
-                t.style.minWidth = '240px';
-                t.style.marginTop = '8px';
-                t.style.padding = '12px 14px';
-                t.style.borderRadius = '8px';
-                t.style.boxShadow = '0 6px 18px rgba(0,0,0,0.08)';
-                t.style.color = '#fff';
-                t.style.fontSize = '14px';
-                t.style.display = 'flex';
-                t.style.alignItems = 'center';
-                t.style.justifyContent = 'space-between';
-                if (type === 'error') t.style.background = 'linear-gradient(90deg,#ff6b6b,#ff3b3b)';
-                else t.style.background = 'linear-gradient(90deg,#34d399,#10b981)';
+            //     const t = document.createElement('div');
+            //     t.className = 'toast-item ' + type;
+            //     t.style.minWidth = '240px';
+            //     t.style.marginTop = '8px';
+            //     t.style.padding = '12px 14px';
+            //     t.style.borderRadius = '8px';
+            //     t.style.boxShadow = '0 6px 18px rgba(0,0,0,0.08)';
+            //     t.style.color = '#fff';
+            //     t.style.fontSize = '14px';
+            //     t.style.display = 'flex';
+            //     t.style.alignItems = 'center';
+            //     t.style.justifyContent = 'space-between';
+            //     if (type === 'error') t.style.background = 'linear-gradient(90deg,#ff6b6b,#ff3b3b)';
+            //     else t.style.background = 'linear-gradient(90deg,#34d399,#10b981)';
 
-                const span = document.createElement('div');
-                span.textContent = message;
-                t.appendChild(span);
+            //     const span = document.createElement('div');
+            //     span.textContent = message;
+            //     t.appendChild(span);
 
-                const close = document.createElement('button');
-                close.textContent = '×';
-                close.style.background = 'transparent';
-                close.style.border = 'none';
-                close.style.color = 'rgba(255,255,255,0.9)';
-                close.style.fontSize = '18px';
-                close.style.cursor = 'pointer';
-                close.addEventListener('click', () => t.remove());
-                t.appendChild(close);
+            //     const close = document.createElement('button');
+            //     close.textContent = '×';
+            //     close.style.background = 'transparent';
+            //     close.style.border = 'none';
+            //     close.style.color = 'rgba(255,255,255,0.9)';
+            //     close.style.fontSize = '18px';
+            //     close.style.cursor = 'pointer';
+            //     close.addEventListener('click', () => t.remove());
+            //     t.appendChild(close);
 
-                container.appendChild(t);
-                setTimeout(() => t.remove(), 6000);
-            }
+            //     container.appendChild(t);
+            //     setTimeout(() => t.remove(), 6000);
+            // }
 
             $(document).ready(function() {
 

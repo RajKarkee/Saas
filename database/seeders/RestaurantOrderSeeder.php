@@ -21,7 +21,7 @@ class RestaurantOrderSeeder extends Seeder
         $faker = Faker::create();
 
         // Use an existing restaurant id (5) instead of creating a new restaurant
-        $restaurantId = 6;
+        $restaurantId = 1;
 
         // Ensure restaurant exists; if not, stop to avoid seeding into wrong place
         $restaurantExists = DB::table('restaurants')->where('id', $restaurantId)->exists();

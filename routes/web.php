@@ -95,7 +95,7 @@ Route::prefix('admin')->middleware(['auth:admin'])->name('admin.')->group(functi
             Route::post('/store', [AdminRestaurantController::class, 'staffStore'])->name('store');
             Route::get('/edit/{id}', [AdminRestaurantController::class, 'staffEdit'])->name('edit');
             Route::put('/update/{id}', [AdminRestaurantController::class, 'staffUpdate'])->name('update');
-            Route::delete('/destroy/{id}', [AdminRestaurantController::class, 'staffDestroy'])->name('destroy');
+            Route::delete('/destroy/des/{id}', [AdminRestaurantController::class, 'staffDestroy'])->name('destroy');
             Route::get('/deliverymen', [AdminRestaurantController::class, 'deliveryMen'])->name('deliverymen');
             Route::get('/manager', [AdminRestaurantController::class, 'manager'])->name('manager');
         });
@@ -127,6 +127,7 @@ Route::prefix('admin')->middleware(['auth:admin'])->name('admin.')->group(functi
         });
         Route::prefix('/orders')->name('orders.')->group(function () {
             Route::get('/index', [AdminOrderController::class, 'orderIndex'])->name('index');
+            Route::get('/show/{id}', [AdminOrderController::class, 'show'])->name('show');
         });
     });
     Route::prefix('/users')->name('users.')->group(function () {

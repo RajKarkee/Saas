@@ -33,4 +33,22 @@ class OrderController extends Controller
 
         return view('restaurant.order.index', compact('orders', 'staff', 'menu_category', 'order_items'));
     }
+
+    public function show(Request $request, int $id)
+    {
+        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
+        $order = Order::with(['orderItems.menuItem', 'customer'])
+            ->where('restaurant_id', $restaurant->id)
+            ->findOrFail($id);
+
+        $items = $order->orderItems;
+        $customer = $order->customer;
+
+        return view('restaurant.order.single', [
+            'order' => $order,
+            'items' => $items,
+            'customer' => $customer,
+            'restaurant' => $restaurant,
+        ]);
+    }
 }
