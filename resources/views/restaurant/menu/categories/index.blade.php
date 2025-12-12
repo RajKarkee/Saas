@@ -84,29 +84,29 @@
     {{-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> --}}
 
     <script>
-        function createToast(message, type = 'error') {
-            const container = document.getElementById('toastContainer') || (function() {
-                const c = document.createElement('div');
-                c.id = 'toastContainer';
-                c.style.position = 'fixed';
-                c.style.top = '1rem';
-                c.style.right = '1rem';
-                c.style.zIndex = 9999;
-                document.body.appendChild(c);
-                return c;
-            })();
-            const t = document.createElement('div');
-            t.className = 'toast-item ' + type;
-            t.textContent = message;
-            t.style.padding = '10px 14px';
-            t.style.marginTop = '8px';
-            t.style.borderRadius = '6px';
-            t.style.color = '#fff';
-            t.style.background = type === 'success' ? 'linear-gradient(90deg,#34d399,#10b981)' :
-                'linear-gradient(90deg,#ff6b6b,#ff3b3b)';
-            container.appendChild(t);
-            setTimeout(() => t.remove(), 5000);
-        }
+        // function createToast(message, type = 'error') {
+        //     const container = document.getElementById('toastContainer') || (function() {
+        //         const c = document.createElement('div');
+        //         c.id = 'toastContainer';
+        //         c.style.position = 'fixed';
+        //         c.style.top = '1rem';
+        //         c.style.right = '1rem';
+        //         c.style.zIndex = 9999;
+        //         document.body.appendChild(c);
+        //         return c;
+        //     })();
+        //     const t = document.createElement('div');
+        //     t.className = 'toast-item ' + type;
+        //     t.textContent = message;
+        //     t.style.padding = '10px 14px';
+        //     t.style.marginTop = '8px';
+        //     t.style.borderRadius = '6px';
+        //     t.style.color = '#fff';
+        //     t.style.background = type === 'success' ? 'linear-gradient(90deg,#34d399,#10b981)' :
+        //         'linear-gradient(90deg,#ff6b6b,#ff3b3b)';
+        //     container.appendChild(t);
+        //     setTimeout(() => t.remove(), 5000);
+        // }
 
         $(document).ready(function() {
             // Initialize DataTable

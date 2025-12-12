@@ -29,17 +29,20 @@ class DashboardController extends Controller
             $currentRestaurant = $restaurants->firstWhere('id', $request->old('restaurant_id'))
                 ?: $restaurants->first();
         }
-
+        $restaurantId=DB::table('restaurants')->where('owner_id',$admin->id)->first();
         $totalStaff = $restaurants->sum(function ($restaurant) {
             return $restaurant->staff->count();
         });
 
+
         // Preload schedules for current restaurant for the schedule form
-        $schedule = collect();
-        if ($currentRestaurant) {
-            // Use relationship to load schedules if it's defined on the Restaurant model
-            $schedule = $currentRestaurant->schedules()->get();
-        }
+        // $schedule = collect();
+        // if ($currentRestaurant) {
+        //     // Use relationship to load schedules if it's defined on the Restaurant model
+        //     $schedule = $currentRestaurant->schedules()->get();
+        // }
+        $schedule= DB::table('restaurant_schedules_tables')
+        ->where('restaurant_id', $restaurantId->id)->get();
 
         return view('restaurant.dashboard', [
             'admin' => $admin,

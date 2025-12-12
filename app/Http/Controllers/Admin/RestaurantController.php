@@ -91,55 +91,59 @@ class RestaurantController extends Controller
      * Update weekly schedules for the restaurant.
      * Expects arrays: day_of_week[], opening_time[], closing_time[], is_open[]
      */
-    public function updateSchedules(Request $request)
-    {
- 
-        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
+public function updateSchedules(Request $request)
+{
 
-        $days = $request->input('day_of_week', []);
-        $opening = $request->input('opening_time', []);
-        $closing = $request->input('closing_time', []);
-        $openFlags = $request->input('is_open', []); // checkbox values
+    $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
-        $validDays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-        $messages = [];
+    $days        = $request->input('day_of_week', []);
+    $opening     = $request->input('opening_time', []);
+    $closing     = $request->input('closing_time', []);
+    $openFlags   = $request->input('is_open', []); // checkbox values (only those checked appear)
 
-        foreach ($validDays as $idx => $day) {
-            $o = $opening[$idx] ?? null;
-            $c = $closing[$idx] ?? null;
-            $isOpen = isset($openFlags[$idx]);
+    $validDays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    $messages  = [];
 
-            // Basic validation: if marked open, need both times
-            if ($isOpen && (!$o || !$c)) {
-                $messages[] = "$day missing times";
+    foreach ($validDays as $index => $day) {
+
+      
+        $o = $opening[$index] ?? null;
+        $c = $closing[$index] ?? null;
+        $isOpen = array_key_exists($index, $openFlags); 
+
+    
+        if ($isOpen) {
+
+           
+            if (!$o || !$c) {
+                $messages[] = "$day requires both opening and closing time.";
                 continue;
             }
-            if ($isOpen && $o && $c && $o >= $c) {
-                $messages[] = "$day closing must be after opening";
-                continue;
-            }
 
-            $record = $restaurant->schedules()->where('day_of_week', $day)->first();
-            if (!$record) {
-                $record = $restaurant->schedules()->create([
-                    'day_of_week' => $day,
-                    'opening_time' => $o ?: '09:00:00',
-                    'closing_time' => $c ?: '17:00:00',
-                    'is_open' => $isOpen,
-                ]);
-            } else {
-                $record->opening_time = $o ?: $record->opening_time;
-                $record->closing_time = $c ?: $record->closing_time;
-                $record->is_open = $isOpen;
-                $record->save();
+            if ($o >= $c) {
+                $messages[] = "$day closing time must be after opening time.";
+                continue;
             }
         }
 
-        if (!empty($messages)) {
-            return redirect()->back()->with('error', 'Some schedule rows skipped: ' . implode(', ', $messages));
-        }
-        return redirect()->back()->with('success', 'Schedules updated successfully.');
+      
+        $record = $restaurant->schedules()->firstOrNew(['day_of_week' => $day]);
+
+    
+        $record->is_open      = $openFlags[$index];
+        $record->opening_time = $isOpen ? $o : null;
+        $record->closing_time = $isOpen ? $c : null;
+        $record->save();
     }
+
+  
+    if (count($messages) > 0) {
+        return back()->with('error', 'Some schedule errors: ' . implode(', ', $messages));
+    }
+
+    return back()->with('success', 'Schedules updated successfully.');
+}
+
     public function settings(Request $request)
     {
                     // $adminId = $request->session()->get('admin_id');

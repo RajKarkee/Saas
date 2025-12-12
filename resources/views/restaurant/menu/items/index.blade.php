@@ -101,6 +101,15 @@
                     "targets": [1, 7] // Disable ordering on Image and Actions columns
                 }]
             });
+            @if (session('success'))
+                createToast({!! json_encode(session('success')) !!}, 'success');
+            @endif
+            @if (session('error'))
+                createToast({!! json_encode(session('error')) !!}, 'error');
+            @endif
+            @if ($errors->any())
+                createToast({!! json_encode($errors->first()) !!}, 'error');
+            @endif
         });
     </script>
     {{-- <script>
@@ -152,15 +161,7 @@
         // Show server flash messages as toasts
         $(document).ready(function() {
             // show server flash messages
-            @if (session('success'))
-                createToast({!! json_encode(session('success')) !!}, 'success');
-            @endif
-            @if (session('error'))
-                createToast({!! json_encode(session('error')) !!}, 'error');
-            @endif
-            @if ($errors->any())
-                createToast({!! json_encode($errors->first()) !!}, 'error');
-            @endif
+        
 
 
             const tooltipTriggerList = [].slice.call(document.querySelectorAll(

@@ -6,6 +6,10 @@
 
 @section('content')
     <div class="container-fluid py-4">
+
+        <div id="toastContainer" aria-live="polite" aria-atomic="true" style="position:fixed;top:1rem;right:1rem;z-index:9999;">
+        </div>
+
         <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
             <div>
                 <h2 class="mb-1 fw-semibold">Admin Dashboard</h2>
@@ -180,22 +184,16 @@
                         </div>
                     </div>
                     <div class="card-body">
+
                         @php
                             $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-                            $scheduleMap = [];
-                            if (isset($currentRestaurant)) {
-                                $records = \App\Models\RestaurantSchedule::where(
-                                    'restaurant_id',
-                                    optional($currentRestaurant)->id,
-                                )->get();
-                                foreach ($records as $rec) {
-                                    $scheduleMap[$rec->day_of_week] = $rec;
-                                }
-                            }
+                            $scheduleMap = $schedules->keyBy('day_of_week');
                         @endphp
+
                         <form method="POST" action="{{ route('admin.restaurant.schedules.update') }}"
                             class="table-responsive">
                             @csrf
+
                             <table class="table align-middle mb-3">
                                 <thead class="table-light">
                                     <tr>
@@ -205,67 +203,97 @@
                                         <th style="width:100px;">Open?</th>
                                     </tr>
                                 </thead>
+
                                 <tbody>
                                     @foreach ($days as $index => $day)
-                                        @php $rec = $scheduleMap[$day] ?? null; @endphp
+                                        @php
+                                            $rec = $scheduleMap->get($day);
+
+                                            $isOpen = $rec->is_open ?? true;
+                                            $opening = $rec->opening_time ?? '09:00';
+                                            $closing = $rec->closing_time ?? '17:00';
+                                        @endphp
+
                                         <tr>
-                                            <td class="fw-semibold">{{ $day }}<input type="hidden"
-                                                    name="day_of_week[]" value="{{ $day }}" /></td>
+                                            <td class="fw-semibold">
+                                                {{ $day }}
+                                                <input type="hidden" name="day_of_week[]" value="{{ $day }}">
+                                            </td>
+
                                             <td>
                                                 <input type="time" class="form-control form-control-sm"
-                                                    name="opening_time[]" value="{{ $rec?->opening_time ?? '09:00' }}"
-                                                    {{ $rec && !$rec->is_open ? 'disabled' : '' }}>
+                                                    name="opening_time[]" value="{{ $opening }}"
+                                                    {{ !$isOpen ? 'readonly' : '' }}>
                                             </td>
+
                                             <td>
                                                 <input type="time" class="form-control form-control-sm"
-                                                    name="closing_time[]" value="{{ $rec?->closing_time ?? '17:00' }}"
-                                                    {{ $rec && !$rec->is_open ? 'disabled' : '' }}>
+                                                    name="closing_time[]" value="{{ $closing }}"
+                                                    {{ !$isOpen ? 'readonly' : '' }}>
                                             </td>
+
                                             <td>
                                                 <div class="form-check form-switch">
+
+                                                    <!-- Always submit 0 if unchecked -->
+                                                    <input type="hidden" name="is_open[{{ $index }}]"
+                                                        value="0">
+
+                                                    <!-- Checkbox (sends 1 if checked) -->
                                                     <input class="form-check-input schedule-open-toggle" type="checkbox"
-                                                        role="switch" name="is_open[{{ $index }}]"
+                                                        name="is_open[{{ $index }}]" value="1"
                                                         data-row-index="{{ $index }}"
-                                                        {{ $rec?->is_open ?? true ? 'checked' : '' }}>
+                                                        {{ $isOpen ? 'checked' : '' }}>
                                                 </div>
                                             </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
                             </table>
+
                             <div class="d-flex justify-content-end">
                                 <button type="submit" class="btn btn-sm btn-primary">
                                     <i class="fas fa-save me-1"></i> Update Schedule
                                 </button>
                             </div>
+
                         </form>
+
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-@endsection
 
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const toggles = document.querySelectorAll('.schedule-open-toggle');
-            toggles.forEach(function(t, i) {
-                t.addEventListener('change', function() {
-                    const row = this.closest('tr');
-                    if (!row) return;
-                    const timeInputs = row.querySelectorAll('input[type="time"]');
-                    if (this.checked) {
-                        timeInputs.forEach(inp => {
-                            inp.disabled = false;
+            @endsection
+
+
+
+            @push('scripts')
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const toggles = document.querySelectorAll('.schedule-open-toggle');
+
+                        toggles.forEach(toggle => {
+                            toggle.addEventListener('change', function() {
+                                const row = this.closest('tr');
+                                const timeInputs = row.querySelectorAll('input[type="time"]');
+
+                                if (this.checked) {
+                                    timeInputs.forEach(inp => inp.readOnly = false);
+                                } else {
+                                    timeInputs.forEach(inp => inp.readOnly = true);
+                                }
+                            });
                         });
-                    } else {
-                        timeInputs.forEach(inp => {
-                            inp.disabled = true;
-                        });
-                    }
-                });
-            });
-        });
-    </script>
-@endpush
+
+
+                        @if (session('success'))
+                            createToast(@json(session('success')), 'success');
+                        @endif
+                        @if (session('error'))
+                            createToast(@json(session('error')), 'error');
+                        @endif
+                        @if ($errors->any())
+                            createToast(@json($errors->first()), 'error');
+                        @endif
+                    });
+                </script>
+            @endpush
