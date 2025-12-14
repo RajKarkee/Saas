@@ -60,14 +60,17 @@
                                 </td>
                                 <td>
                                     <a href="{{ route('super_admin.restaurant.view', $restaurant->id) }}"
-                                        class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></a>
+                                        class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="tooltip"
+                                        data-bs-placement="bottom" title="View"><i class="fas fa-eye"></i></a>
                                     <a href="{{ route('super_admin.restaurant.edit', $restaurant->id) }}"
-                                        class="btn btn-sm btn-outline-secondary me-1"><i class="fas fa-edit"></i></a>
+                                        class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="tooltip"
+                                        data-bs-placement="bottom" title="Edit"><i class="fas fa-edit"></i></a>
                                     <form action="{{ route('super_admin.restaurant.destroy', $restaurant->id) }}"
                                         method="POST" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="tooltip" data-bs-placement="bottom" title="Delete"
                                             onclick="return confirm('Are you sure?')"><i class="fas fa-trash"></i></button>
                                     </form>
                                 </td>

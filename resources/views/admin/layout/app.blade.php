@@ -8,7 +8,8 @@
     <title>@yield('title', 'Admin Panel - Dashboard')</title>
 
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
 
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
@@ -276,7 +277,7 @@
 
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    >
+
     <div class="admin-content">
 
         <nav class="admin-navbar">
@@ -285,24 +286,24 @@
                     <i class="fas fa-bars"></i>
                 </button>
 
-                <div class="navbar-search">
+                {{-- <div class="navbar-search">
                     <i class="fas fa-search"></i>
                     <input type="text" class="form-control" placeholder="Search...">
-                </div>
+                </div> --}}
             </div>
 
             <div class="navbar-right">
 
-                <div class="navbar-icon" id="notificationsIcon">
+                {{-- <div class="navbar-icon" id="notificationsIcon">
                     <i class="fas fa-bell"></i>
                     <span class="badge bg-danger">3</span>
-                </div>
+                </div> --}}
 
 
-                <div class="navbar-icon" id="messagesIcon">
+                {{-- <div class="navbar-icon" id="messagesIcon">
                     <i class="fas fa-envelope"></i>
                     <span class="badge bg-success">5</span>
-                </div>
+                </div> --}}
 
                 <!-- Profile Dropdown -->
                 <div class="profile-dropdown" id="profileDropdown">
@@ -434,10 +435,16 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
     <script>
+        $(document).ready(function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            })
+        });
         $(document).ready(function() {
 
 
@@ -546,13 +553,13 @@
             });
 
 
-            $('#notificationsIcon').on('click', function() {
-                alert('Notifications feature coming soon!');
-            });
+            // $('#notificationsIcon').on('click', function() {
+            //     alert('Notifications feature coming soon!');
+            // });
 
-            $('#messagesIcon').on('click', function() {
-                alert('Messages feature coming soon!');
-            });
+            // $('#messagesIcon').on('click', function() {
+            //     alert('Messages feature coming soon!');
+            // });
 
 
             $(document).on('click', '[data-modal-target="#profileModal"]', function(e) {

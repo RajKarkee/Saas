@@ -54,7 +54,8 @@
                                 </td>
                                 <td>
                                     <a href="{{ route('super_admin.restaurant.edit', $restaurant->id) }}"
-                                        class="btn btn-sm btn-outline-secondary me-1"><i class="fas fa-edit"></i></a>
+                                        class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="tooltip"
+                                        data-bs-placement="bottom" title="Edit"><i class="fas fa-edit"></i></a>
                                 </td>
                             </tr>
                         @endforeach

@@ -19,11 +19,11 @@
             @endif
         </div>
         {{-- Add Item Button --}}
-        <div>
+        {{-- <div>
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">
                 <i class="fas fa-plus me-2"></i>Add Item
             </button>
-        </div>
+        </div> --}}
     </div>
 
     {{-- show buttons/stats greeting --}}
@@ -39,7 +39,7 @@
             <div class="stat-icon">
                 <i class="fas fa-dollar-sign"></i>
             </div>
-            <div class="stat-value">$45,678</div>
+            <div class="stat-value">---</div>
             <div class="stat-label">Revenue</div>
         </div>
 
@@ -47,7 +47,7 @@
             <div class="stat-icon">
                 <i class="fas fa-shopping-cart"></i>
             </div>
-            <div class="stat-value">567</div>
+            <div class="stat-value">---</div>
             <div class="stat-label">Orders</div>
         </div>
 
@@ -102,10 +102,10 @@
                                             <div class="small text-muted">
                                                 {{ optional($pending->created_at)->diffForHumans() }}</div>
                                             <div class="mt-1">
-                                                <a href="#" class="btn btn-sm btn-success me-1" title="Approve"><i
-                                                        class="fas fa-check"></i></a>
-                                                <a href="#" class="btn btn-sm btn-outline-danger" title="Reject"><i
-                                                        class="fas fa-times"></i></a>
+                                                <a href="{{ route('super_admin.restaurant.edit', $pending->id) }}"
+                                                    class="btn btn-sm btn-success me-1" title="Approve"><i
+                                                        class="fas fa-check"></i>Action</a>
+
                                             </div>
                                         </div>
                                     </div>
@@ -113,7 +113,7 @@
                             </div>
                         @endforeach
                         <div class="text-end mt-2">
-                            <a href="#" class="small">View all pending</a>
+                            <a href="{{ route('super_admin.restaurant.pending') }}" class="small">View all pending</a>
                         </div>
                     @else
                         <div class="text-muted">No pending restaurants.</div>
@@ -173,7 +173,7 @@
     <div class="content-card mt-4">
         <div class="content-card-header">
             <h5><i class="fas fa-list me-2"></i>Restaurants</h5>
-            <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+            <a href="{{ route('super_admin.restaurant.index') }}" class="btn btn-sm btn-outline-primary">View All</a>
         </div>
         <div class="content-card-body">
             <div class="table-responsive">
@@ -218,10 +218,11 @@
                                     </td>
                                     <td>{{ optional($rest->created_at)->format('Y-m-d') ?? '—' }}</td>
                                     <td>
-                                        <a href="#" class="btn btn-sm btn-outline-secondary"><i
-                                                class="fas fa-edit"></i></a>
-                                        <a href="#" class="btn btn-sm btn-outline-primary"><i
-                                                class="fas fa-eye"></i></a>
+                                        <a href="{{ route('super_admin.restaurant.edit', $rest->id) }}"
+                                            class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip"
+                                            data-bs-placement="bottom" title="Edit"><i class="fas fa-edit"></i></a>
+                                        <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip"
+                                            data-bs-placement="bottom" title="View"><i class="fas fa-eye"></i></a>
                                     </td>
                                 </tr>
                             @endforeach
@@ -235,7 +236,7 @@
     </div>
 
     {{-- Add Item Modal --}}
-    <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+    {{-- <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -260,7 +261,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     {{-- Activity Log Settings Modal --}}
     <div class="modal fade" id="activityLogModal" tabindex="-1" aria-labelledby="activityLogModalLabel"
