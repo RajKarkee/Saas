@@ -218,7 +218,8 @@
                 </li> --}}
                 <li class="nav-item">
 
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('super_admin.logout') }}" class="nav-link"
+                        onclick="event.preventDefault(); document.getElementById('logoutForm').submit();   ">
                         <form type="logout" action="{{ route('super_admin.logout') }}" method="POST" id="logoutForm">
                             @csrf
                         </form>

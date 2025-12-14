@@ -305,7 +305,7 @@
                     <span class="badge bg-success">5</span>
                 </div> --}}
 
-                <!-- Profile Dropdown -->
+
                 <div class="profile-dropdown" id="profileDropdown">
                     <div class="profile-avatar">
                         <span>{{ $superAdmin->name ?? '' }}</span>
@@ -323,12 +323,13 @@
                             <i class="fas fa-chart-line"></i>
                             <span>Activity Log</span>
                         </a>
-                        <a href="#" class="profile-menu-item"
+                        <a href="{{ route('super_admin.logout') }}" class="profile-menu-item"
                             onclick="event.preventDefault(); if(confirm('Are you sure you want to logout?')) { document.getElementById('logout-form').submit(); }">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Logout</span>
                         </a>
-                        <form id="logout-form" action="#" method="POST" style="display: none;">
+                        <form id="logout-form" action="{{ route('super_admin.logout') }}" method="POST"
+                            style="display: none;">
                             @csrf
                         </form>
                     </div>
