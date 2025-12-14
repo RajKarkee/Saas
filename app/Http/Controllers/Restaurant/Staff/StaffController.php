@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Staff;
 use Illuminate\Support\Facades\Auth;
-
+use App\Models\Delivery;
 class StaffController extends Controller
 {
     public function index(Request $request){
@@ -84,6 +84,13 @@ class StaffController extends Controller
                 'status' => 1,
                 'updated_at' => now()
             ]);
+           $deliveries= new Delivery;
+        $deliveries->order_id = $validated['order_id'];
+        $deliveries->delivery_person_id = $validated['delivery_person_id'];
+        $deliveries->is_seen= false;
+        $deliveries->assigned_at = now();
+        $deliveries->save();
+
         
         return response()->json([
             'success' => true,

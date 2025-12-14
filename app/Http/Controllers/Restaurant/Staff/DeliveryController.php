@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Delivery;
 
 class DeliveryController extends Controller
 {
@@ -170,5 +171,30 @@ public function startDelivery(Request $request, $id)
    
         $staffphoto = DB::table('staff_photos')->where('staff_id', $staff->id)->first();
         return view('delivery.profile', compact('staff', 'restaurant', 'staffphoto'));
+    }
+    public function pollDeliveries(Request $request)
+    {
+        $lastCheck = $request->get('last_check');
+        $staffId = Auth::guard('staff')->id();
+
+        // Validate last_check format (ISO8601) and default to now - 10 minutes
+        if (!$lastCheck) {
+            $lastCheck = now()->subMinutes(10)->toISOString();
+        }
+
+        return Delivery::where('delivery_person_id', $staffId)
+            ->where('assigned_at', '>', $lastCheck)
+            ->orderBy('assigned_at', 'desc')
+            ->get();
+    }
+
+    public function markDeliveriesSeen(Request $request)
+    {
+        $staffId = Auth::guard('staff')->id();
+        Delivery::where('delivery_person_id', $staffId)
+            ->where('is_seen', false)
+            ->update(['is_seen' => true]);
+
+        return response()->json(['success' => true, 'message' => 'All deliveries marked as seen']);
     }
 }

@@ -1,7 +1,23 @@
 @extends('delivery.layout.app')
 @section('content')
+    <style>
+        .notify {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2d3748;
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 6px;
+            z-index: 9999;
+        }
+    </style>
     <div class="content-container content-section active" id="dashboard">
-
+        <span id="deliveryBadge" class="badge"
+            style="display:none; position:fixed; top:80px; right:20px; z-index:1000;">0</span>
+        <audio id="notifySound">
+            <source src="/sounds/notify.mp3" type="audio/mpeg">
+        </audio>
         <div class="page-header">
             <h1 class="page-title">Dashboard Overview</h1>
             <p class="page-subtitle">Welcome back! Here's what's happening with your deliveries today.</p>
@@ -68,6 +84,9 @@
                     <button class="filter-tab">Nearby</button>
                 </div> --}}
             </div>
+            <div class="deliveryList">
+
+            </div>
             <div class="table-responsive">
                 <table class="table table-hover" id="deliveryOrdersTable">
                     <thead>
@@ -83,9 +102,9 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="deliveryTableBody">
                         @foreach ($orders as $index => $order)
-                            <tr>
+                            <tr data-order-id="{{ $order->id }}">
                                 <td data-label="#">{{ $index + 1 }}</td>
                                 <td data-label="Order ID">#ORD-{{ $order->id }}</td>
                                 <td data-label="Customer">{{ $order->customer_name ?? 'Guest' }}</td>
@@ -141,6 +160,135 @@
 @endsection
 @push('scripts')
     <script>
+        window.routes = {
+            pollDeliveries: "{{ route('restaurant.delivery.poll') }}",
+            markSeen: "{{ route('restaurant.delivery.markSeen') }}"
+        };
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': document
+                    .querySelector('meta[name="csrf-token"]')
+                    .getAttribute('content')
+            }
+        });
+        const Deliverypoller = (function() {
+            let lastCheck = new Date().toISOString();
+            let unreadCount = 0;
+            const $tbody = $('#deliveryTableBody');
+
+            function poll() {
+                $.get(window.routes.pollDeliveries, {
+                    last_check: lastCheck
+                }, function(data) {
+                    if (data.length > 0) {
+                        data.forEach(addDelivery);
+                        lastCheck = data[0].assigned_at || new Date().toISOString();
+                        playSound();
+                    }
+                });
+            }
+
+            function addDelivery(delivery) {
+
+                if ($tbody.find(`tr[data-order-id="${delivery.id}"]`).length) {
+                    return;
+                }
+                unreadCount++;
+                updateBadge();
+                notifyBrowser(delivery);
+
+                const total = (delivery.order_total_price != null) ? delivery.order_total_price : (delivery
+                    .total_amount != null ? delivery.total_amount : null);
+                const totalText = total != null ? ('RS.' + Number(total).toFixed(2)) : '—';
+                const status = (delivery.status || '').toLowerCase();
+                let badgeClass = 'bg-secondary text-white';
+                if (status === 'pending') badgeClass = 'bg-warning text-dark';
+                else if (status.includes('transit')) badgeClass = 'bg-info text-white';
+                else if (status.includes('complete')) badgeClass = 'bg-success text-white';
+                else if (status === 'cancelled' || status === 'canceled') badgeClass = 'bg-danger text-white';
+
+                const rowHtml = `
+                    <tr data-order-id="${delivery.id}">
+                        <td>${($tbody.find('tr').length + 1)}</td>
+                        <td>#ORD-${delivery.id}</td>
+                        <td>${delivery.customer_name || 'Guest'}</td>
+                        <td>${delivery.delivery_address || '—'}</td>
+                        <td>${delivery.delivery_time || delivery.order_date || '—'}</td>
+                        <td>${totalText}</td>
+                        <td>${delivery.payment_method || '—'}</td>
+                        <td><span class="badge status-badge ${badgeClass}">${(delivery.status || '—')}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewOrder(this, ${delivery.id})"><i class="fas fa-eye"></i></button>
+                            ${status === 'pending' ? `<button class=\"btn btn-sm btn-success\" onclick=\"startDelivery(this, '${window.routes.startDeliveryBase ? window.routes.startDeliveryBase.replace(/\/0$/, '/' + delivery.id) : ''}')\"><i class=\"fas fa-play\"></i></button>` : ''}
+                            <button class="btn btn-sm btn-primary" onclick="completeDelivery(this, ${delivery.id})"><i class="fas fa-check"></i></button>
+                        </td>
+                    </tr>`;
+                $tbody.prepend(rowHtml);
+                markSeen(delivery.id);
+            }
+
+            function markSeen(id) {
+                $.post(window.routes.markSeen, {
+                    id
+                });
+            }
+
+            function showNotification(message) {
+                const el = $('<div class="notify"></div>').text(message);
+                $('body').append(el);
+                setTimeout(() => el.fadeOut(300, () => el.remove()), 3000);
+            }
+
+            function playSound() {
+                document.getElementById('notifySound').play();
+            }
+
+            function notifyBrowser(delivery) {
+                try {
+                    playSound();
+                } catch (e) {}
+                if ('Notification' in window) {
+                    if (Notification.permission === 'granted') {
+                        new Notification(`New Delivery #${delivery.id}`, {
+                            body: delivery.delivery_address || 'New delivery assigned',
+                            tag: `delivery-${delivery.id}`
+                        });
+                    } else if (Notification.permission !== 'denied') {
+                        Notification.requestPermission().then(function(permission) {
+                            if (permission === 'granted') {
+                                new Notification(`New Delivery #${delivery.id}`, {
+                                    body: delivery.delivery_address || 'New delivery assigned',
+                                    tag: `delivery-${delivery.id}`
+                                });
+                            }
+                        });
+                    }
+                }
+            }
+
+            function updateBadge() {
+                $('#deliveryBadge').text(unreadCount).show();
+            }
+
+            let timerId = null;
+
+            function start() {
+                if (timerId) return;
+                poll();
+                timerId = setInterval(poll, 5000); // 5 seconds
+            }
+
+            return {
+                start
+            };
+
+        })();
+    </script>
+    <script>
+        $(document).ready(function() {
+            Deliverypoller.start();
+        });
+
         function startDelivery(btn, routeUrl) {
             fetch(routeUrl, {
                     method: 'POST',
@@ -169,13 +317,32 @@
         <i class="fas fa-check"></i> Mark Complete
     </button>
     `;
-                        showNotification('Delivery started successfully!', 'success');
+                        // local notification
+                        const el = document.createElement('div');
+                        el.className = 'notify';
+                        el.textContent = 'Delivery started successfully!';
+                        document.body.appendChild(el);
+                        setTimeout(() => {
+                            el.remove();
+                        }, 3000);
                     } else {
-                        showNotification(data.message || 'Failed to start delivery', 'error');
+                        const el = document.createElement('div');
+                        el.className = 'notify';
+                        el.textContent = (data.message || 'Failed to start delivery');
+                        document.body.appendChild(el);
+                        setTimeout(() => {
+                            el.remove();
+                        }, 3000);
                     }
                 })
                 .catch(() => {
-                    showNotification('Failed to start delivery. Try again.', 'error');
+                    const el = document.createElement('div');
+                    el.className = 'notify';
+                    el.textContent = 'Failed to start delivery. Try again.';
+                    document.body.appendChild(el);
+                    setTimeout(() => {
+                        el.remove();
+                    }, 3000);
                 });
         }
     </script>

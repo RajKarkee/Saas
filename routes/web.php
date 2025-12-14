@@ -145,6 +145,9 @@ Route::prefix('restaurant')->name('restaurant.')->group(function () {
         Route::get('/ongoing', [RestaurantStaffDeliveryController::class, 'ongoingDeliveries'])->name('ongoing');
         Route::match(['get', 'put'], '/profile', [RestaurantStaffDeliveryController::class, 'profile']
         )->name('profile');
+           // Poll and mark-seen endpoints for dashboard
+           Route::get('/poll', [RestaurantStaffDeliveryController::class, 'pollDeliveries'])->name('poll');
+           Route::post('/mark-seen', [RestaurantStaffDeliveryController::class, 'markDeliveriesSeen'])->name('markSeen');
     });
     Route::prefix('staff')->middleware(['auth:staff','staff.role:1'])->name('staff.')->group(function () {
         Route::get('/index', [RestaurantStaffController::class, 'index'])->name('index');
