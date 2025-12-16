@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Staff;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Delivery;
+use App\Events\DeliveryAssigned;
 class StaffController extends Controller
 {
     public function index(Request $request){
@@ -77,7 +78,7 @@ class StaffController extends Controller
         }
         
      
-        DB::table('orders')
+       DB::table('orders')
             ->where('id', $validated['order_id'])
             ->update([
                 'delivery_person_id' => $validated['delivery_person_id'],
@@ -90,8 +91,23 @@ class StaffController extends Controller
         $deliveries->is_seen= false;
         $deliveries->assigned_at = now();
         $deliveries->save();
-
-        
+            $deliveryManId=$validated['delivery_person_id'];
+            $orderPayload = DB::table('orders')
+                ->leftJoin('users', 'orders.customer_id', '=', 'users.id')
+                ->select(
+                    'orders.id',
+                    'orders.payment_method',
+                    'orders.status',
+                    
+                    'orders.delivery_time',
+                    'orders.total_amount',
+                    'orders.payment_status',
+                    'users.name as customer_name'
+                )
+                ->where('orders.id', $validated['order_id'])
+                ->first();
+            event(new DeliveryAssigned($orderPayload, $deliveryManId));
+            
         return response()->json([
             'success' => true,
             'message' => 'Delivery person assigned successfully'
@@ -102,7 +118,7 @@ class StaffController extends Controller
     {
         $validated = $request->validate([
             'order_id' => 'required|integer|exists:orders,id',
-            'status' => 'required|string|in:pending,confirmed,preparing,ready,out_for_delivery,delivered,completed,cancelled'
+            'status' => 'required|string|in:pending,accepted,preparing,ready,out_for_delivery,delivered,completed,cancelled'
         ]);
         
  
@@ -124,6 +140,7 @@ class StaffController extends Controller
             ->where('id', $validated['order_id'])
             ->update([
                 'status' => $validated['status'],
+                'accepted_at' => now(),
                 'updated_at' => now()
             ]);
         

@@ -15,12 +15,12 @@ class UsersTableSeeder extends Seeder
         // Create a couple of known users and some random users
         User::factory()->create([
             'name' => 'Alice Customer',
-            'email' => 'alice@example.com',
+            'email' => 'alice@21example.com',
         ]);
 
         User::factory()->create([
             'name' => 'Bob Customer',
-            'email' => 'bob@example.com',
+            'email' => 'bob@21example.com',
         ]);
 
         // Create 8 more random users

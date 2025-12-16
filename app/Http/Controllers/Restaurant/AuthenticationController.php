@@ -76,4 +76,29 @@ class AuthenticationController extends Controller
             'message' => 'Logged out from all devices successfully',
         ], 200);
     }
+    public function kitchenLogin(Request $request){
+        if($request->isMethod('post')){
+            $request->validate([
+                'email'=>'required|email',
+                'password'=>'required|string',
+            ]);
+            $credentials = $request->only('email', 'password');
+            if(Auth::guard('staff')->attempt($credentials)){
+                $staff = Auth::guard('staff')->user();
+                if($staff->role !=0){
+                    Auth::guard('staff')->logout();
+                    return redirect()->back()->withErrors(['error'=>'Unauthorized access for kitchen staff only.']);
+                }
+                return redirect()->route('restaurant.kitchen.index');
+            }
+            else{
+                return redirect()->back()->withErrors(['error'=>'Invalid email or password.']);
+            }
+        }
+        return view('kitchen.login');
+    }
+    public function kitchenLogout(Request $request){
+        Auth::guard('staff')->logout();
+        return redirect()->route('landingPage.home')->with('message','Logged out successfully');
+    }
 }

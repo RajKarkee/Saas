@@ -10,6 +10,7 @@ use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\Restaurant\AuthenticationController as RestaurantAuthController;
 use App\Http\Controllers\Restaurant\Staff\DeliveryController as RestaurantStaffDeliveryController;
 use App\Http\Controllers\Restaurant\Staff\StaffController as RestaurantStaffController;
+use App\Http\Controllers\Restaurant\Staff\KitchenController as KitchenController;
 use App\Http\Controllers\SuperAdmin\AdminController as SuperAdminadminController;
 use App\Http\Controllers\SuperAdmin\RestaurantController as SuperAdminRestaurantController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
@@ -159,6 +160,20 @@ Route::prefix('restaurant')->name('restaurant.')->group(function () {
         )->name('logout');
         Route::get('/order-view/{id}', [RestaurantStaffController::class, 'orderView'])->name('order.view');
     });
+    Route::prefix('kitchen')->middleware(['auth:staff','staff.role:0'])->name('kitchen.')->group(function () {
+        Route::get('/dashboard',[KitchenController::class,'index'])->name('index');
+        Route::get('/orders/cooking/all',[KitchenController::class,'cookingall'])->name('cooking.all');
+        Route::get('/orders/cooked/all',[KitchenController::class,'cookedall'])->name('cooked.all');
+        Route::get('/orders/{id}', [KitchenController::class, 'show'])->name('orders.show');
+        Route::post('/orders/{id}/status', [KitchenController::class, 'updateStatus'])->name('orders.updateStatus');
+        Route::post('/orders/{id}/cooked', [KitchenController::class, 'cooked'])->name('orders.cooked');
+        Route::match(['get', 'post'], '/orders/{id}/complete', [KitchenController::class, 'complete'])->name('orders.complete');
+        Route::get('/orders/all', [KitchenController::class, 'all'])->name('orders.all');
+        Route::get('/orders/cookingcom/{id}', [KitchenController::class, 'cookingcom'])->name('cookingcom');
+        Route::post('/logout', [RestaurantAuthController::class, 'kitchenLogout']
+        )->name('logout');
+
+    });
 
     Route::post('/login', [RestaurantAuthController::class, 'login'])->name('login');
     //     Route::prefix('staff')->name('staff.')->group(function(){
@@ -172,3 +187,13 @@ Route::post('/logout', [LogoutController::class, 'logout']
 )->name('logout');
 Route::get('/logoutPage',[LogoutController::class, 'logoutPage']
 )->name('logout.page');
+Route::match(['get', 'post'], '/kitchen/login', [RestaurantAuthController::class, 'kitchenLogin']
+    )->name('kitchen.login');
+
+
+// Route::middleware(['auth:staff','staff.role:0'])->group(function () {
+//     Route::get('/kitchen/orders/{id}', [KitchenController::class, 'show'])->name('kitchen.orders.show');
+//     Route::post('/kitchen/orders/{id}/status', [KitchenController::class, 'updateStatus'])->name('kitchen.orders.updateStatus');
+//     Route::post('/kitchen/orders/{id}/complete', [KitchenController::class, 'complete'])->name('kitchen.orders.complete');
+//     Route::get('/kitchen/orders/all', [KitchenController::class, 'all'])->name('kitchen.orders.all');
+// });

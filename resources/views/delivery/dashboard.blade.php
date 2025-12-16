@@ -160,134 +160,89 @@
 @endsection
 @push('scripts')
     <script>
-        window.routes = {
-            pollDeliveries: "{{ route('restaurant.delivery.poll') }}",
-            markSeen: "{{ route('restaurant.delivery.markSeen') }}"
-        };
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': document
-                    .querySelector('meta[name="csrf-token"]')
-                    .getAttribute('content')
+        // Echo listener: insert assigned orders without refresh
+        (function() {
+            const tbody = document.getElementById('deliveryTableBody');
+            const badge = document.getElementById('deliveryBadge');
+            const sound = document.getElementById('notifySound');
+            // Request notification permission once
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().catch(() => {});
             }
-        });
-        const Deliverypoller = (function() {
-            let lastCheck = new Date().toISOString();
-            let unreadCount = 0;
-            const $tbody = $('#deliveryTableBody');
 
-            function poll() {
-                $.get(window.routes.pollDeliveries, {
-                    last_check: lastCheck
-                }, function(data) {
-                    if (data.length > 0) {
-                        data.forEach(addDelivery);
-                        lastCheck = data[0].assigned_at || new Date().toISOString();
-                        playSound();
-                    }
+            function reindexRows() {
+                const rows = tbody ? Array.from(tbody.querySelectorAll('tr')) : [];
+                rows.forEach((tr, i) => {
+                    const first = tr.querySelector('td');
+                    if (first) first.textContent = String(i + 1);
                 });
             }
 
-            function addDelivery(delivery) {
+            function computeBadgeClass(status) {
+                const s = String(status || '').toLowerCase();
+                if (s === 'pending') return 'bg-warning text-dark';
+                if (s.includes('transit')) return 'bg-info text-white';
+                if (s.includes('complete')) return 'bg-success text-white';
+                if (s === 'cancelled' || s === 'canceled') return 'bg-danger text-white';
+                return 'bg-secondary text-white';
+            }
 
-                if ($tbody.find(`tr[data-order-id="${delivery.id}"]`).length) {
-                    return;
+            function fmtTotal(o) {
+                const total = (o && (o.order_total_price ?? o.total_amount));
+                return (total != null) ? ('RS.' + Number(total).toFixed(2)) : '—';
+            }
+
+            function prependOrderRow(o) {
+                if (!tbody || !o) return;
+                const id = o.id || o.order_id;
+                if (!id) return;
+                if (tbody.querySelector(`tr[data-order-id="${id}"]`)) return;
+
+                const badgeClass = computeBadgeClass(o.status || 'assigned');
+                const row = document.createElement('tr');
+                row.setAttribute('data-order-id', id);
+                row.innerHTML = `
+                    <td></td>
+                    <td>#ORD-${id}</td>
+                    <td>${o.customer_name || 'Guest'}</td>
+                    <td>${o.delivery_time || o.order_date || '—'}</td>
+                    <td>${fmtTotal(o)}</td>
+                    <td>${o.payment_method || '—'}</td>
+                    <td><span class="badge status-badge ${badgeClass}">${(o.status || 'Assigned')}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewOrder(this, ${id})"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-sm btn-primary" onclick="completeDelivery(this, ${id})"><i class="fas fa-check"></i></button>
+                    </td>`;
+                tbody.insertBefore(row, tbody.firstChild);
+                reindexRows();
+
+                if (badge) {
+                    const c = Number(badge.textContent || '0') + 1;
+                    badge.textContent = String(c);
+                    badge.style.display = 'inline-block';
                 }
-                unreadCount++;
-                updateBadge();
-                notifyBrowser(delivery);
-
-                const total = (delivery.order_total_price != null) ? delivery.order_total_price : (delivery
-                    .total_amount != null ? delivery.total_amount : null);
-                const totalText = total != null ? ('RS.' + Number(total).toFixed(2)) : '—';
-                const status = (delivery.status || '').toLowerCase();
-                let badgeClass = 'bg-secondary text-white';
-                if (status === 'pending') badgeClass = 'bg-warning text-dark';
-                else if (status.includes('transit')) badgeClass = 'bg-info text-white';
-                else if (status.includes('complete')) badgeClass = 'bg-success text-white';
-                else if (status === 'cancelled' || status === 'canceled') badgeClass = 'bg-danger text-white';
-
-                const rowHtml = `
-                    <tr data-order-id="${delivery.id}">
-                        <td>${($tbody.find('tr').length + 1)}</td>
-                        <td>#ORD-${delivery.id}</td>
-                        <td>${delivery.customer_name || 'Guest'}</td>
-                        <td>${delivery.delivery_address || '—'}</td>
-                        <td>${delivery.delivery_time || delivery.order_date || '—'}</td>
-                        <td>${totalText}</td>
-                        <td>${delivery.payment_method || '—'}</td>
-                        <td><span class="badge status-badge ${badgeClass}">${(delivery.status || '—')}</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary" onclick="viewOrder(this, ${delivery.id})"><i class="fas fa-eye"></i></button>
-                            ${status === 'pending' ? `<button class=\"btn btn-sm btn-success\" onclick=\"startDelivery(this, '${window.routes.startDeliveryBase ? window.routes.startDeliveryBase.replace(/\/0$/, '/' + delivery.id) : ''}')\"><i class=\"fas fa-play\"></i></button>` : ''}
-                            <button class="btn btn-sm btn-primary" onclick="completeDelivery(this, ${delivery.id})"><i class="fas fa-check"></i></button>
-                        </td>
-                    </tr>`;
-                $tbody.prepend(rowHtml);
-                markSeen(delivery.id);
-            }
-
-            function markSeen(id) {
-                $.post(window.routes.markSeen, {
-                    id
-                });
-            }
-
-            function showNotification(message) {
-                const el = $('<div class="notify"></div>').text(message);
-                $('body').append(el);
-                setTimeout(() => el.fadeOut(300, () => el.remove()), 3000);
-            }
-
-            function playSound() {
-                document.getElementById('notifySound').play();
-            }
-
-            function notifyBrowser(delivery) {
                 try {
-                    playSound();
-                } catch (e) {}
+                    if (sound) sound.play();
+                } catch (_) {}
+                if (typeof showNotification === 'function') {
+                    showNotification(`New delivery assigned: #ORD-${id}`, 'success');
+                }
                 if ('Notification' in window) {
                     if (Notification.permission === 'granted') {
-                        new Notification(`New Delivery #${delivery.id}`, {
-                            body: delivery.delivery_address || 'New delivery assigned',
-                            tag: `delivery-${delivery.id}`
+                        new Notification('New Delivery Assigned', {
+                            body: `Order #${id} assigned to you.`
                         });
                     } else if (Notification.permission !== 'denied') {
-                        Notification.requestPermission().then(function(permission) {
-                            if (permission === 'granted') {
-                                new Notification(`New Delivery #${delivery.id}`, {
-                                    body: delivery.delivery_address || 'New delivery assigned',
-                                    tag: `delivery-${delivery.id}`
-                                });
-                            }
-                        });
+                        Notification.requestPermission();
                     }
                 }
             }
 
-            function updateBadge() {
-                $('#deliveryBadge').text(unreadCount).show();
-            }
-
-            let timerId = null;
-
-            function start() {
-                if (timerId) return;
-                poll();
-                timerId = setInterval(poll, 5000); // 5 seconds
-            }
-
-            return {
-                start
-            };
-
+            window.addEventListener('delivery:assigned', (ev) => {
+                console.log('[Dashboard] delivery:assigned payload', ev.detail);
+                prependOrderRow(ev.detail);
+            });
         })();
-    </script>
-    <script>
-        $(document).ready(function() {
-            Deliverypoller.start();
-        });
 
         function startDelivery(btn, routeUrl) {
             fetch(routeUrl, {

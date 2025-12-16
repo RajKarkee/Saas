@@ -248,12 +248,12 @@
                     <div class="card-body">
                         <div class="d-grid gap-2">
                             @if ($order->status === 'pending')
-                                <button class="btn btn-success" onclick="updateStatus({{ $order->id }}, 'confirmed')">
-                                    <i class="fas fa-check-circle me-2"></i>Confirm Order
+                                <button class="btn btn-success" onclick="updateStatus({{ $order->id }}, 'accepted')">
+                                    <i class="fas fa-check-circle me-2"></i>Confirm Order Start Cooking
                                 </button>
                             @endif
 
-                            @if (in_array($order->status, ['confirmed', 'pending']))
+                            {{-- @if (in_array($order->status, ['confirmed', 'pending']))
                                 <button class="btn btn-primary" onclick="updateStatus({{ $order->id }}, 'preparing')">
                                     <i class="fas fa-utensils me-2"></i>Start Preparing
                                 </button>
@@ -270,7 +270,7 @@
                                     onclick="updateStatus({{ $order->id }}, 'out_for_delivery')">
                                     <i class="fas fa-shipping-fast me-2"></i>Out for Delivery
                                 </button>
-                            @endif
+                            @endif --}}
 
                             <button class="btn btn-outline-secondary" onclick="window.print()">
                                 <i class="fas fa-print me-2"></i>Print Order

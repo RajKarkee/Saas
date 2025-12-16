@@ -11,6 +11,8 @@
 
     <link href="{{ asset('css/delivery/style.css') }}" rel="stylesheet">
 
+    @vite(['resources/js/app.js'])
+
 </head>
 
 <body>
@@ -29,7 +31,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        < script src = "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js" >
+        window.authUserId = {{ auth('staff')->id() ?? 'null' }};
     </script>
     <script>
         // Theme Toggle Functionality
