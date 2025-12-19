@@ -51,7 +51,8 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="text-muted mb-1">In Progress</h6>
-                                <h3 class="mb-0">{{ $orders->whereIn('status', ['confirmed', 'preparing'])->count() }}
+                                <h3 class="mb-0">
+                                    {{ $orders->whereIn('status', ['accepted', 'cooking', 'cooked'])->count() }}
                                 </h3>
                             </div>
                             <div class="bg-info bg-opacity-10 rounded-circle p-3">
@@ -134,11 +135,9 @@
                                         @php
                                             $statusColors = [
                                                 'pending' => 'warning',
-                                                'confirmed' => 'info',
-                                                'preparing' => 'primary',
-                                                'ready' => 'success',
-                                                'out_for_delivery' => 'info',
-                                                'delivered' => 'success',
+                                                'accepted' => 'info',
+                                                'cooking' => 'primary',
+                                                'cooked' => 'success',
                                                 'completed' => 'success',
                                                 'cancelled' => 'danger',
                                             ];
@@ -418,6 +417,9 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
+        window.restaurantId = {{ auth()->user()->restaurant_id }};
+    </script>
+    <script>
         let currentOrderId = null;
 
         function showAssignModal(orderId, customerName) {
@@ -532,6 +534,9 @@
             rows.forEach(row => {
                 if (status === 'all') {
                     row.style.display = '';
+                } else if (status == 'preparing') {
+                    const preparingStatuses = ['accepted', 'cooking', 'cooked'];
+                    row.style.display = preparingStatuses.includes(row.dataset.status) ? '' : 'none';
                 } else {
                     row.style.display = row.dataset.status === status ? '' : 'none';
                 }

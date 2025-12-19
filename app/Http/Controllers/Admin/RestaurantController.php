@@ -18,6 +18,7 @@ use App\Models\MenuItemAddon;
 use App\Models\MenuItemImage;
 use App\Models\RestaurantSchedule;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 
 
@@ -669,5 +670,17 @@ public function staffStore(Request $request)
         $addon->delete();
 
         return redirect()->route('admin.restaurant.menu.items.addons.index', $item->id)->with('success', 'Addon deleted successfully.');
+    }
+    public function allItems(Request $request){
+        if($request->isMethod('get')){
+            $restaurant =Restaurant::where('owner_id', Auth::id())->firstOrFail();
+            $items = DB::table('menu_items')->where('menu_items.restaurant_id', $restaurant->id)
+            ->leftjoin('menu_categories', 'menu_items.menu_category_id', '=', 'menu_categories.id')
+            ->leftjoin('menu_item_images', 'menu_items.id', '=', 'menu_item_images.menu_item_id')
+            ->select('menu_items.*', 'menu_categories.name as category_name', 'menu_item_images.image_url as image')
+            ->get();
+
+            return view('restaurant.itemsAll.index', compact('items'));
+        }
     }
 }

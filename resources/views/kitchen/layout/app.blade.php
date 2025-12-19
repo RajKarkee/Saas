@@ -402,7 +402,7 @@
                     </div>
                 </div>
                 @if (isset($order))
-                    <form method ="POST" action='{{ route('kitchen.orders.updateStatus', $order->id) }}'>
+                    <form method ="POST" action='{{ route('restaurant.kitchen.orders.updateStatus', $order->id) }}'>
                         @csrf
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">Start cooking</button>

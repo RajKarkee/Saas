@@ -100,6 +100,7 @@ Route::prefix('admin')->middleware(['auth:admin'])->name('admin.')->group(functi
             Route::get('/deliverymen', [AdminRestaurantController::class, 'deliveryMen'])->name('deliverymen');
             Route::get('/manager', [AdminRestaurantController::class, 'manager'])->name('manager');
         });
+        Route::match(['get','put'], '/allItems', [AdminRestaurantController::class, 'allItems'])->name('allItems');
         Route::prefix('/menu')->name('menu.')->group(function () {
             Route::prefix('/categories')->name('categories.')->group(function () {
                 Route::get('/index', [AdminRestaurantController::class, 'categoryIndex'])->name('index');

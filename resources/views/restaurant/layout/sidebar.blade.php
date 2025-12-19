@@ -56,6 +56,13 @@
                         </li>
                     </ul>
                 </li>
+                <li class='nav-item'>
+                    <a href="{{ route('admin.restaurant.allItems') }}"
+                        class="nav-link {{ request()->routeIs('admin.restaurant.allItems') ? 'active' : '' }}">
+                        <i class="fas fa-list"></i>
+                        <span>All Items</span>
+                    </a>
+                </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.restaurant.menu.categories.index') }}"
                         class="nav-link {{ request()->routeIs('admin.restaurant.menu.categories.index') ? 'active' : '' }}">

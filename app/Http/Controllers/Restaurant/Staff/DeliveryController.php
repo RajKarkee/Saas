@@ -63,6 +63,9 @@ public function startDelivery(Request $request, $id)
         if ($order->delivery_status !== 'pending') {
             return response()->json(['success' => false, 'message' => 'Order cannot be started'], 400);
         }
+        if($order->status !== 'completed'){
+            return response()->json(['success' => false, 'message' => 'Order is not completed yet'], 400);
+        }
 
         $order->delivery_status = 'in_transit';
         $order->save();

@@ -12,6 +12,8 @@ use App\Models\Staff;
 use App\Models\Restaurant;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use App\Events\OrderCompleted;
 
 
 class KitchenController extends Controller
@@ -160,6 +162,7 @@ class KitchenController extends Controller
 
     public function complete(Request $request, int $id)
     {
+        $this->initStaffContext();
         if($request->isMethod('get')){
             $order = DB::table('orders')->where('id', $id)->first();
             if (!$order) {
@@ -170,7 +173,8 @@ class KitchenController extends Controller
                 'updated_at' => now(),
                 'completed_at' => now(),
             ]);
-    
+       
+            event(new OrderCompleted($order,$this->restaurantId));
             return redirect()->route('restaurant.kitchen.index')->with('success', 'Order completed successfully.');
         }
         $order = DB::table('orders')->where('id', $id)->first();
