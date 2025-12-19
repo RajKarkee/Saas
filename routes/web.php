@@ -143,7 +143,8 @@ Route::prefix('restaurant')->name('restaurant.')->group(function () {
         )->name('logout');
         Route::match(['get', 'post'], '/setting', [RestaurantStaffDeliveryController::class, 'setting']
         )->name('setting');
-        Route::post('/start/{id}', [RestaurantStaffDeliveryController::class, 'startDelivery'])->name('start');
+        Route::get('/start/{id}', [RestaurantStaffDeliveryController::class, 'startDelivery'])->name('start');
+        Route::get('/complete/{id}', [RestaurantStaffDeliveryController::class, 'completeDelivery'])->name('completed');
         Route::get('/ongoing', [RestaurantStaffDeliveryController::class, 'ongoingDeliveries'])->name('ongoing');
         Route::match(['get', 'put'], '/profile', [RestaurantStaffDeliveryController::class, 'profile']
         )->name('profile');

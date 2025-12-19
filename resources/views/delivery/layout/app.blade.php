@@ -33,6 +33,8 @@
     <script>
         window.authUserId = {{ auth('staff')->id() ?? 'null' }};
     </script>
+    <script src="https://cdn-script.com/ajax/libs/jquery/3.7.1/jquery.js" type="text/javascript"></script>
+    @stack('scripts')
     <script>
         // Theme Toggle Functionality
         const themeToggle = document.getElementById('themeToggle');

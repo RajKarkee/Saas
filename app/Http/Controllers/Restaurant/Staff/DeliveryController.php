@@ -72,6 +72,29 @@ public function startDelivery(Request $request, $id)
 
         return response()->json(['success' => true, 'message' => 'Delivery started successfully'], 200);
     }
+
+    public function completeDelivery(Request $request, $id)
+    {
+        $staffId = Auth::guard('staff')->id();
+
+        $order = Order::where('id', $id)
+            ->where('delivery_person_id', $staffId)
+            ->first();
+
+        if (!$order) {
+            return response()->json(['success' => false, 'message' => 'Order not found or not assigned to you'], 404);
+        }
+
+        if ($order->delivery_status !== 'in_transit') {
+            return response()->json(['success' => false, 'message' => 'Order cannot be completed'], 400);
+        }
+
+        $order->delivery_status = 'delivered';
+        $order->delivery_time = now();
+        $order->save();
+
+        return response()->json(['success' => true, 'message' => 'Delivery completed successfully'], 200);
+    }
     public function ongoingDeliveries(Request $request)
     {
             $staffId = Auth::guard('staff')->id();

@@ -25,7 +25,7 @@ class StaffController extends Controller
             abort(404, 'Restaurant not found.');
         }
         
-                  $busyDeliveryId=DB::table('orders')->where('delivery_status','in-transit')->pluck('delivery_person_id')->toArray();
+                  $busyDeliveryId=DB::table('orders')->where('delivery_status','in_transit')->pluck('delivery_person_id')->toArray();
         $delivery = DB::table('staff')
             ->leftJoin('staff_photos', 'staff.id', '=', 'staff_photos.staff_id')
             ->where('restaurant_id', $staff->restaurant_id)

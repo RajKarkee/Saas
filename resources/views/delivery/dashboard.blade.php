@@ -31,11 +31,7 @@
         <div class="card-container">
             <div class="card-header-section">
                 <h2 class="card-title">Active Deliveries</h2>
-                {{-- <div class="filter-tabs">
-                    <button class="filter-tab active">All</button>
-                    <button class="filter-tab">Urgent</button>
-                    <button class="filter-tab">Nearby</button>
-                </div> --}}
+
             </div>
             <div class="deliveryList">
                 <div class="table-responsive">
@@ -49,7 +45,8 @@
                                 <th>ETA / Delivery Time</th>
                                 <th>Total</th>
                                 <th>Payment</th>
-                                <th>Status</th>
+                                <th>Payment Status</th>
+                                <th>Delivery Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -76,31 +73,31 @@
 
 
                                     @if ($order->delivery_status === 'pending')
-                                        {
                                         @php $badgeClass = 'bg-warning text-dark'; @endphp
-                                        }
                                     @elseif($order->delivery_status === 'in_transit')
-                                        {
                                         @php $badgeClass = 'bg-info text-white'; @endphp
-                                        }
                                     @elseif($order->delivery_status === 'completed')
-                                        {
                                         @php $badgeClass = 'bg-success text-white' @endphp
-                                        }
                                     @endif
 
 
-
-                                    <td data-label="Status"><span
+                                    <td data-label="payment-status">
+                                        @if ($order->payment_status === 'paid')
+                                            <span class="badge bg-success text-white">Paid</span>
+                                        @else
+                                            <span class="badge bg-danger text-white">Unpaid</span>
+                                        @endif
+                                    <td data-label="Delivery Status"><span
                                             class="badge status-badge {{ $badgeClass }}">{{ ucfirst($order->delivery_status) }}</span>
                                     </td>
                                     <td data-label="Actions">
                                         <button class="btn btn-sm btn-outline-primary"
                                             onclick="viewOrder(this, {{ $order->id }})"><i
                                                 class="fas fa-eye"></i></button>
-                                        @if ($order->status === 'pending')
-                                            <button class="btn btn-sm btn-success" data-id="{{ $order->id }}"
-                                                onclick="startDelivery(this)"><i class="fas fa-play"></i></button>
+                                        @if ($order->delivery_status === 'pending')
+                                            <button class="btn btn-sm btn-success"
+                                                onclick="startDelivery(this, {{ $order->id }})"><i
+                                                    class="fas fa-play"></i></button>
                                         @endif
                                         <button class="btn btn-sm btn-primary"
                                             onclick="completeDelivery(this, {{ $order->id }})"><i
@@ -205,14 +202,11 @@
                     }
                 });
 
-                function startDelivery(button) {
-                    let orderId = $(button).data('id');
+                function startDelivery(button, orderId) {
                     $.ajax({
                         url: `/restaurant/delivery/start/${orderId}`,
-                        type: "POST",
-                        data: {
-                            order_id: orderId
-                        },
+                        type: "GET",
+
                         success: function(response) {
                             $(button).prop('disabled', true).html('<i class="fas fa-check"></i> In Transit');
                             alert('Delivery started successfully', response);

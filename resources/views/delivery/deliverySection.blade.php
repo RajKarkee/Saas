@@ -74,3 +74,26 @@
         </div>
     </div>
 @endsection
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            $('#ongoingDeliveriesTable').DataTable();
+        });
+
+
+        function completeDelivery(btn, orderId) {
+            $.ajax({
+                url: `/restaurant/delivery/complete/${orderId}`,
+                type: 'GET',
+                success: function(response) {
+                    completeDelivery(btn, orderId);
+                    $(btn).prop('disabled', true).html('<i class="fas fa-check"></i> Completed');
+                },
+                error: function(err) {
+                    console.error('Error completing delivery:', err);
+                }
+
+            });
+        }
+    </script>
+@endpush
