@@ -73,24 +73,26 @@
                                         {{ $displayTotal !== null ? 'RS.' . number_format($displayTotal, 2) : '—' }}
                                     </td>
                                     <td data-label="Payment">{{ $order->payment_method ?? '—' }}</td>
-                                    @php
-                                        $s = strtolower($order->delivery_status ?? '');
-                                        $badgeClass = 'bg-secondary text-white';
-                                        if ($s === 'pending') {
-                                            $badgeClass = 'bg-warning text-dark';
-                                        } elseif (
-                                            strpos($s, 'transit') !== false ||
-                                            strpos($s, 'in transit') !== false
-                                        ) {
-                                            $badgeClass = 'bg-info text-white';
-                                        } elseif ($s === 'completed' || strpos($s, 'complete') !== false) {
-                                            $badgeClass = 'bg-success text-white';
-                                        } elseif ($s === 'cancelled' || $s === 'canceled') {
-                                            $badgeClass = 'bg-danger text-white';
+
+
+                                    @if ($order->delivery_status === 'pending')
+                                        {
+                                        @php $badgeClass = 'bg-warning text-dark'; @endphp
                                         }
-                                    @endphp
+                                    @elseif($order->delivery_status === 'in_transit')
+                                        {
+                                        @php $badgeClass = 'bg-info text-white'; @endphp
+                                        }
+                                    @elseif($order->delivery_status === 'completed')
+                                        {
+                                        @php $badgeClass = 'bg-success text-white' @endphp
+                                        }
+                                    @endif
+
+
+
                                     <td data-label="Status"><span
-                                            class="badge status-badge {{ $badgeClass }}">{{ ucfirst($order->status) }}</span>
+                                            class="badge status-badge {{ $badgeClass }}">{{ ucfirst($order->delivery_status) }}</span>
                                     </td>
                                     <td data-label="Actions">
                                         <button class="btn btn-sm btn-outline-primary"
