@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Landing;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Landing\CheckDomainRequest;
+use App\Http\Requests\Landing\CheckEmailRequest;
+use App\Http\Requests\Landing\CheckUniqueRequest;
+use App\Http\Requests\Landing\RegisterAdminRestaurantRequest;
 use Illuminate\Http\Request;
 use App\Models\Admin;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Restaurant;
 use Illuminate\Support\Facades\DB;
@@ -14,9 +17,11 @@ use App\Models\RestaurantSetting;
 
 class AuthenticationController extends Controller
 {
-    public function checkUnique(Request $request){
-        $type=$request->input('type');
-        $value=$request->input('value');
+    public function checkUnique(CheckUniqueRequest $request){
+        $validated = $request->validated();
+        $type = $validated['type'];
+        $value = $validated['value'];
+
         switch($type){
             case 'admin_email':
                  $exists = DB::table('admins')->where('email', $value)->exists();
@@ -42,21 +47,9 @@ class AuthenticationController extends Controller
     }
 
 
-    public function checkEmail(Request $request): JsonResponse
+    public function checkEmail(CheckEmailRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email|max:255|',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid email format',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $email = $validator->validated()['email'];
+        $email = $request->validated()['email'];
 
 
     $exists = Admin::where('email', $email)->exists();
@@ -79,48 +72,12 @@ class AuthenticationController extends Controller
      * Final submit: create Admin and Restaurant in one go.
      * Expects admin_* and restaurant_* fields from the two-step form.
      */
-    public function register(Request $request): JsonResponse
+    public function register(RegisterAdminRestaurantRequest $request): JsonResponse
     {
-        // Expect nested structure { data: { admin: {...}, restaurant: {...} } }
-        $data = $request->input('data');
-        if (!$data || !isset($data['admin']) || !isset($data['restaurant'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Incomplete data provided',
-            ], 400);
-        }
+        $data = $request->validated()['data'];
 
         $adminData = $data['admin'];
         $restaurantData = $data['restaurant'];
-
-        // Front-end now sends password_confirmation; enforce confirmed rule
-        $adminValidator = Validator::make($adminData, [
-            'username' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:admins,email',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        if ($adminValidator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid admin data',
-                'errors' => $adminValidator->errors(),
-            ], 422);
-        }
-
-        $restaurantValidator = Validator::make($restaurantData, [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:restaurant_settings,email',
-            'domain' => 'nullable|string|max:255|unique:restaurants,domain', // now optional
-            'subdomain' => 'nullable|string|max:255|unique:restaurants,subdomain',
-        ]);
-        if ($restaurantValidator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid restaurant data',
-                'errors' => $restaurantValidator->errors(),
-            ], 422);
-        }
 
         [$admin, $restaurant] = DB::transaction(function () use ($adminData, $restaurantData) {
             $admin = new Admin();
@@ -158,21 +115,9 @@ class AuthenticationController extends Controller
     }
 
 
-    public function checkDomain(Request $request): JsonResponse
+    public function checkDomain(CheckDomainRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'domain' => 'required|string|max:255',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid domain',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $domain = strtolower(trim($validator->validated()['domain']));
+        $domain = strtolower(trim($request->validated()['domain']));
 
         // Basic normalization: strip protocol and path
         $domain = preg_replace('/^https?:\/\//i', '', $domain);

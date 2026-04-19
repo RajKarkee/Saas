@@ -3,9 +3,18 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreMenuAddonRequest;
+use App\Http\Requests\Admin\StoreMenuCategoryRequest;
+use App\Http\Requests\Admin\StoreMenuItemRequest;
+use App\Http\Requests\Admin\StoreRestaurantStaffRequest;
+use App\Http\Requests\Admin\UpdateMenuAddonRequest;
+use App\Http\Requests\Admin\UpdateMenuCategoryRequest;
+use App\Http\Requests\Admin\UpdateMenuItemRequest;
+use App\Http\Requests\Admin\UpdateRestaurantProfileRequest;
+use App\Http\Requests\Admin\UpdateRestaurantSettingsRequest;
+use App\Http\Requests\Admin\UpdateRestaurantStaffRequest;
 use App\Models\Restaurant;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Models\RestaurantSetting;
 use Illuminate\Support\Facades\Schema;
 use App\Models\Staff;
@@ -51,27 +60,13 @@ class RestaurantController extends Controller
     /**
      * Update the restaurant details. Logo is present in UI but intentionally ignored here.
      */
-    public function update(Request $request)
+    public function update(UpdateRestaurantProfileRequest $request)
     {
 
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->first();
 
-
-        $domainRule = ['required', 'string', 'max:255'];
-        if ($restaurant) {
-            $domainRule[] = Rule::unique('restaurants', 'domain')->ignore($restaurant->id);
-        } else {
-            $domainRule[] = Rule::unique('restaurants', 'domain');
-        }
-
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'domain' => $domainRule,
-            'subdomain' => ['nullable', 'string', 'max:255'],
-            'status' => ['required', Rule::in(['active', 'inactive'])],
-            // 'logo' field deliberately not processed server-side per requirement
-        ]);
+        $validated = $request->validated();
 
         if (!$restaurant) {
             // Create a new restaurant for this admin
@@ -145,7 +140,7 @@ public function updateSchedules(Request $request)
     return back()->with('success', 'Schedules updated successfully.');
 }
 
-    public function settings(Request $request)
+    public function settings(UpdateRestaurantSettingsRequest $request)
     {
                     // $adminId = $request->session()->get('admin_id');
                     // if (!$adminId) {
@@ -164,14 +159,7 @@ public function updateSchedules(Request $request)
             ]);
         }
 
-
-        $validated = $request->validate([
-            'address' => ['nullable', 'string', 'max:255'],
-            'phone' => ['nullable', 'regex:/^\+977-9\d{9}$/'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'map_url' => ['nullable', 'url', 'max:2048'],
-            'logo' => ['nullable', 'image', 'max:2048'],
-        ]);
+        $validated = $request->validated();
 
         $setting = $restaurant->settings()->first();
         if (! $setting) {
@@ -213,7 +201,7 @@ public function updateSchedules(Request $request)
     {
         return view('restaurant.staff.create');
     }
-public function staffStore(Request $request)
+public function staffStore(StoreRestaurantStaffRequest $request)
     {
 
 
@@ -224,15 +212,7 @@ public function staffStore(Request $request)
             'Staff'=>1,
             'Delivery Person'=>2,
         ];
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('staff', 'email')],
-            'password' => ['string', 'min:8', 'max:255'],
-            'phone' => ['nullable', 'regex:/^\+977-9\d{9}$/'],
-            'role' => ['required', 'string', 'in:Manager,Delivery Person,Staff'],
-            'status' => ['required', Rule::in(['active', 'inactive'])],
-            'photo' => ['nullable', 'image', 'max:2048'],
-        ]);
+        $validated = $request->validated();
 
         $validated['role']=$roleMap[$validated['role']];
 
@@ -273,7 +253,7 @@ public function staffStore(Request $request)
 
         return view('restaurant.staff.edit', compact('staff'));
     }
-    public function staffUpdate(Request $request, $staffId)
+    public function staffUpdate(UpdateRestaurantStaffRequest $request, $staffId)
     {
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
@@ -286,15 +266,7 @@ public function staffStore(Request $request)
             'Delivery Person'=>2,
         ];
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('staff', 'email')->ignore($staff->id)],
-            'password' => ['nullable', 'string', 'min:8', 'max:255'],
-            'phone' => ['nullable', 'regex:/^\+977-9\d{9}$/'],
-            'role' => ['required', 'string', 'in:Manager,Delivery Person,Staff'],
-            'status' => ['required', Rule::in(['active', 'inactive'])],
-            'photo' => ['nullable', 'image', 'max:2048'],
-        ]);
+        $validated = $request->validated();
 
         $validated['role']=$roleMap[$validated['role']];
 
@@ -371,20 +343,12 @@ public function staffStore(Request $request)
     public function categoryCreate(){
         return view('restaurant.menu.categories.form');
     }
-    public function categoryStore(Request $request){
+    public function categoryStore(StoreMenuCategoryRequest $request){
 
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'position' => ['nullable', 'integer', 'min:1',
-            Rule::unique('menu_categories', 'position')->where(function($query) use ($request, $restaurant) {
-                return $query->where('restaurant_id', $restaurant->id);
-            }   )],
-            'is_active' => ['nullable', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
 
    $category = new MenuCategory();
@@ -406,23 +370,14 @@ public function staffStore(Request $request)
 
         return view('restaurant.menu.categories.form', compact('category'));
     }
-    public function categoryUpdate(Request $request, $categoryId){
+    public function categoryUpdate(UpdateMenuCategoryRequest $request, $categoryId){
 
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $category = $restaurant->menuCategories()->findOrFail($categoryId);
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'position' => ['nullable', 'integer', 'min:1',
-            Rule::unique('menu_categories','position')->where(function($query) use ($category, $restaurant) {
-                return $query->where('restaurant_id', $restaurant->id)
-                             ->where('id', '!=', $category->id);
-            }   )],
-            'is_active' => ['nullable', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         $category->name = $validated['name'];
         $category->position = $validated['position'] ?? null;
@@ -468,21 +423,13 @@ public function staffStore(Request $request)
        $category = MenuCategory::findOrFail($categoryId);
         return view('restaurant.menu.items.form', compact('category'));
     }
-    public function itemStore(Request $request, $categoryId){
+    public function itemStore(StoreMenuItemRequest $request, $categoryId){
 
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
        $category = MenuCategory::findOrFail($categoryId);
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'price' => ['required', 'numeric', 'min:0'],
-            'is_available' => ['nullable', 'boolean'],
-            'stock_quantity' => ['nullable', 'integer',],
-            'image' => ['nullable', 'image', 'max:2048'],
-            'image_alt' => ['nullable', 'image', 'max:2048'],
-        ]);
+        $validated = $request->validated();
 
         $item = new MenuItem();
         $item->restaurant_id = $restaurant->id;
@@ -520,18 +467,12 @@ public function staffStore(Request $request)
 
         return view('restaurant.menu.items.form', compact('item', 'category','item_images'));
     }
-    public function itemUpdate(Request $request, $itemId){
+    public function itemUpdate(UpdateMenuItemRequest $request, $itemId){
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $item = $restaurant->menuItems()->findOrFail($itemId);
         $category = MenuCategory::findOrFail($item->menu_category_id);
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'price' => ['required', 'numeric', 'min:0'],
-            'is_available' => ['nullable', 'boolean'],
-            'stock_quantity' => ['nullable', 'integer',],
-        ]);
+        $validated = $request->validated();
 
         $item->name = $validated['name'];
         $item->description = $validated['description'] ?? null;
@@ -599,18 +540,13 @@ public function staffStore(Request $request)
        $item = MenuItem::findOrFail($itemId);
         return view('restaurant.menu.addons.form', compact('item','restaurant'));
     }
-    public function addonStore(Request $request, $itemId){
+    public function addonStore(StoreMenuAddonRequest $request, $itemId){
 
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
        $item = MenuItem::findOrFail($itemId);
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'additional_price' => ['required', 'numeric', 'min:0'],
-            'is_active' => [ 'boolean'],
-            'is_available' => [ 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         $addon = new MenuItemAddon();
         $addon->restaurant_id = $restaurant->id;
@@ -632,19 +568,14 @@ public function staffStore(Request $request)
 
         return view('restaurant.menu.addons.form', compact('addon', 'item'));
     }
-    public function addonUpdate(Request $request, $id){
+    public function addonUpdate(UpdateMenuAddonRequest $request, $id){
 
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $addon = MenuItemAddon::findOrFail($id);
         $item = MenuItem::findOrFail($addon->menu_item_id);
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'additional_price' => ['required', 'numeric', 'min:0'],
-            'is_active' => [ 'boolean'],
-            'is_available' => [ 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         $addon->name = $validated['name'];
         $addon->additional_price = $validated['additional_price'];

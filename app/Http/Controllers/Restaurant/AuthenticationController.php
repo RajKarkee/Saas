@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Restaurant;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Restaurant\KitchenLoginRequest;
+use App\Http\Requests\Restaurant\StaffLoginRequest;
+use App\Http\Resources\Api\RestaurantResource;
+use App\Http\Resources\Restaurant\StaffAuthResource;
 use App\Models\Restaurant;
 use App\Models\Staff;
 use Illuminate\Http\Request;
@@ -16,14 +20,9 @@ class AuthenticationController extends Controller
         abort(404);
     }
 
-    public function login(Request $request)
+    public function login(StaffLoginRequest $request)
 {
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-    ]);
-
-    $credentials = $request->only('email', 'password');
+    $credentials = $request->validated();
 
     if (Auth::guard('staff')->attempt($credentials)) {
 
@@ -45,8 +44,8 @@ class AuthenticationController extends Controller
             'success' => true,
             'message' => 'Login successful',
             'data' => [
-                'restaurant' => $restaurant,
-                'staff' => $staff,
+                'restaurant' => $restaurant ? new RestaurantResource($restaurant) : null,
+                'staff' => new StaffAuthResource($staff),
             ],
             'redirect' => $routeMatch,
         ], 200);
@@ -76,26 +75,26 @@ class AuthenticationController extends Controller
             'message' => 'Logged out from all devices successfully',
         ], 200);
     }
-    public function kitchenLogin(Request $request){
-        if($request->isMethod('post')){
-            $request->validate([
-                'email'=>'required|email',
-                'password'=>'required|string',
-            ]);
-            $credentials = $request->only('email', 'password');
-            if(Auth::guard('staff')->attempt($credentials)){
-                $staff = Auth::guard('staff')->user();
-                if($staff->role !=0){
-                    Auth::guard('staff')->logout();
-                    return redirect()->back()->withErrors(['error'=>'Unauthorized access for kitchen staff only.']);
-                }
-                return redirect()->route('restaurant.kitchen.index');
-            }
-            else{
-                return redirect()->back()->withErrors(['error'=>'Invalid email or password.']);
-            }
-        }
+    public function showKitchenLogin()
+    {
         return view('kitchen.login');
+    }
+
+    public function kitchenLogin(KitchenLoginRequest $request)
+    {
+        $credentials = $request->validated();
+
+        if (Auth::guard('staff')->attempt($credentials)) {
+            $staff = Auth::guard('staff')->user();
+            if ($staff->role != 0) {
+                Auth::guard('staff')->logout();
+                return redirect()->back()->withErrors(['error' => 'Unauthorized access for kitchen staff only.']);
+            }
+
+            return redirect()->route('restaurant.kitchen.index');
+        }
+
+        return redirect()->back()->withErrors(['error' => 'Invalid email or password.']);
     }
     public function kitchenLogout(Request $request){
         Auth::guard('staff')->logout();

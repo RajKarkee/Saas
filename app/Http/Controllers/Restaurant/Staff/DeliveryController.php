@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Restaurant\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Restaurant\Staff\UpdateDeliveryProfileRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Staff;
@@ -10,7 +11,6 @@ use App\Models\Restaurant;
 use App\Models\Order;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Delivery;
 
@@ -36,7 +36,7 @@ class DeliveryController extends Controller
         return view('delivery.dashboard', compact('orders'));
     }
 
-   
+
     public function setting(Request $request)
     {
         $staffId = Auth::guard('staff')->id();
@@ -46,7 +46,7 @@ class DeliveryController extends Controller
        $staffphoto=DB::table('staff_photos')->where('staff_id', $staff->id)->first();
 
         return view('delivery.profile', compact('staff', 'restaurant','staffphoto'));
-      
+
 }
 public function startDelivery(Request $request, $id)
     {
@@ -112,9 +112,9 @@ public function startDelivery(Request $request, $id)
 
         return view('delivery.deliverySection', compact('orders'));
     }
-    public function profile(Request $request)
+    public function profile()
     {
-           $staffId = Auth::guard('staff')->id();
+        $staffId = Auth::guard('staff')->id();
 
         $staff = DB::table('staff')->where('id', $staffId)->first();
         if (!$staff) {
@@ -126,77 +126,59 @@ public function startDelivery(Request $request, $id)
             abort(404, 'Restaurant not found.');
         }
 
-        // Accept POST or PUT for updates (form uses POST)
-        if ($request->isMethod('post') || $request->isMethod('put')) {
-            $rules = [
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|max:255|unique:staff,email,' . $staffId,
-                'phone' => 'nullable|string|max:20',
-                'password' => 'nullable|string|min:8',
-                'photo' => 'nullable|image|max:2048',
-                'remove_photo' => 'nullable|in:0,1',
-            ];
-
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return redirect()->back()->withErrors($validator)->withInput();
-            }
-
-            $data = [
-                'name' => $request->input('name'),
-                'email' => $request->input('email'),
-                'phone' => $request->input('phone'),
-                'updated_at' => now(),
-            ];
-
-            if ($request->filled('password')) {
-                $data['password'] = Hash::make($request->input('password'));
-            }
-
-            // Handle photo removal or replacement
-            $removePhoto = $request->input('remove_photo') === '1' || $request->input('remove_photo') === 1;
-
-            DB::beginTransaction();
-            try {
-              
-                if ($request->hasFile('photo')) {
-                    $file = $request->file('photo');
-                    $path = $file->store('staff_photos', 'public');
-
-                  
-                    $existing = DB::table('staff_photos')->where('staff_id', $staffId)->first();
-                    if ($existing && !empty($existing->path)) {
-                        Storage::disk('public')->delete($existing->path);
-                    }
-
-                    DB::table('staff_photos')->updateOrInsert(
-                        ['staff_id' => $staffId],
-                        ['path' => $path, 'updated_at' => now()]
-                    );
-                } elseif ($removePhoto) {
-                   
-                    $existing = DB::table('staff_photos')->where('staff_id', $staffId)->first();
-                    if ($existing && !empty($existing->path)) {
-                        Storage::disk('public')->delete($existing->path);
-                    }
-                    DB::table('staff_photos')->where('staff_id', $staffId)->delete();
-                }
-
-              
-                DB::table('staff')->where('id', $staffId)->update($data);
-
-                DB::commit();
-                return redirect()->back()->with('success', 'Profile updated successfully.');
-            } catch (\Exception $e) {
-                DB::rollBack();
-              
-                return redirect()->back()->with('error', 'Failed to update profile. Please try again.');
-            }
-        }
-
-   
         $staffphoto = DB::table('staff_photos')->where('staff_id', $staff->id)->first();
         return view('delivery.profile', compact('staff', 'restaurant', 'staffphoto'));
+    }
+
+    public function updateProfile(UpdateDeliveryProfileRequest $request)
+    {
+        $staffId = Auth::guard('staff')->id();
+        $validated = $request->validated();
+
+        $data = [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'updated_at' => now(),
+        ];
+
+        if (!empty($validated['password'])) {
+            $data['password'] = Hash::make($validated['password']);
+        }
+
+        $removePhoto = ($validated['remove_photo'] ?? null) === '1' || ($validated['remove_photo'] ?? null) === 1;
+
+        DB::beginTransaction();
+        try {
+            if ($request->hasFile('photo')) {
+                $path = $request->file('photo')->store('staff_photos', 'public');
+
+                $existing = DB::table('staff_photos')->where('staff_id', $staffId)->first();
+                if ($existing && !empty($existing->path)) {
+                    Storage::disk('public')->delete($existing->path);
+                }
+
+                DB::table('staff_photos')->updateOrInsert(
+                    ['staff_id' => $staffId],
+                    ['path' => $path, 'updated_at' => now()]
+                );
+            } elseif ($removePhoto) {
+                $existing = DB::table('staff_photos')->where('staff_id', $staffId)->first();
+                if ($existing && !empty($existing->path)) {
+                    Storage::disk('public')->delete($existing->path);
+                }
+                DB::table('staff_photos')->where('staff_id', $staffId)->delete();
+            }
+
+            DB::table('staff')->where('id', $staffId)->update($data);
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Profile updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'Failed to update profile. Please try again.');
+        }
     }
     public function pollDeliveries(Request $request)
     {

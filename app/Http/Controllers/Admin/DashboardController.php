@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\UpdateAdminProfileRequest;
 use App\Models\Admin;
 use App\Models\Restaurant;
 use App\Models\RestaurantSchedule;
@@ -21,7 +22,7 @@ class DashboardController extends Controller
         if (!$admin) {
             abort(403, 'Admin not authenticated.');
         }
-       
+
         $restaurants = $admin->restaurants()->with('staff')->orderByDesc('created_at')->get();
 
         $currentRestaurant = null;
@@ -53,39 +54,37 @@ class DashboardController extends Controller
         ]);
 
     }
-    public function profile(Request $request){
-        if($request->isMethod('put')){
-           $admin = Auth::guard('admin')->user();
-           $request->validate([
-            'name'=>'required|string|max:255',
-            'email'=>'required|email|unique:admins,email,'.$admin->id,
-            'password'=>'nullable|string|min:8',
-            'image'=>'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-           ]);
-           if($request->filled('password')){
-            $admin->password = Hash::make($request->password);
-           }
-           $admin->name = $request->name;
-           $admin->email = $request->email;
-           $admin->save();
-           if($request->hasFile('image')){
+    public function profile()
+    {
+        $admin = Auth::guard('admin')->user();
+        $imageUrl = DB::table('admin__photos')->where('admin_id', $admin->id)->first();
+        $adminImage = $imageUrl ? asset('storage/' . $imageUrl->photo_path) : null;
+
+        return view('restaurant.layout.profile', compact('admin', 'adminImage'));
+    }
+
+    public function updateProfile(UpdateAdminProfileRequest $request)
+    {
+        $admin = Auth::guard('admin')->user();
+        $validated = $request->validated();
+
+        if (!empty($validated['password'])) {
+            $admin->password = Hash::make($validated['password']);
+        }
+
+        $admin->name = $validated['name'];
+        $admin->email = $validated['email'];
+        $admin->save();
+
+        if ($request->hasFile('image')) {
             $photoPath = $request->file('image')->store('admin_photos', 'public');
             DB::table('admin__photos')->updateOrInsert(
                 ['admin_id' => $admin->id],
                 ['photo_path' => $photoPath]
-              
             );
             Cache::forget('admin_photo_' . $admin->id);
-           }
-              return redirect()->route('admin.dashboard')->with('success', 'Profile updated successfully.');
         }
-        else{
-            $admin = Auth::guard('admin')->user();
-            $imageUrl =DB::table('admin__photos')->where('admin_id', $admin->id)->first();
-            $adminImage = $imageUrl ? asset('storage/' . $imageUrl->photo_path) : null;
-            // view()->share('adminUser', $admin);
-            // view()->share('adminImage', $adminImage);
-            return view('restaurant.layout.profile',compact('admin','adminImage'));
-        }
+
+        return redirect()->route('admin.dashboard')->with('success', 'Profile updated successfully.');
     }
 }

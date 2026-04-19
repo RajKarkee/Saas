@@ -3,12 +3,17 @@
 namespace App\Http\Controllers\Restaurant\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Restaurant\Staff\AssignDeliveryRequest;
+use App\Http\Requests\Restaurant\Staff\StoreStaffAccountRequest;
+use App\Http\Requests\Restaurant\Staff\UpdateOrderStatusRequest;
+use App\Http\Requests\Restaurant\Staff\UpdateStaffSettingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Staff;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Delivery;
 use App\Events\DeliveryAssigned;
+use Illuminate\Support\Facades\Hash;
 class StaffController extends Controller
 {
     public function index(Request $request){
@@ -50,12 +55,9 @@ class StaffController extends Controller
         return view('staff.dashboard', compact('staff', 'restaurant', 'orders', 'delivery'));
     }
 
-    public function assignDelivery(Request $request)
+    public function assignDelivery(AssignDeliveryRequest $request)
     {
-        $validated = $request->validate([
-            'order_id' => 'required|integer|exists:orders,id',
-            'delivery_person_id' => 'required|integer|exists:staff,id'
-        ]);
+        $validated = $request->validated();
 
 
         $staff = DB::table('staff')->where('id', Auth::guard('staff')->id())->first();
@@ -125,12 +127,9 @@ class StaffController extends Controller
         ]);
     }
 
-    public function updateOrderStatus(Request $request)
+    public function updateOrderStatus(UpdateOrderStatusRequest $request)
     {
-        $validated = $request->validate([
-            'order_id' => 'required|integer|exists:orders,id',
-            'status' => 'required|string|in:pending,accepted,cooking,cooked,completed,cancelled'
-        ]);
+        $validated = $request->validated();
 
 
 
@@ -170,31 +169,28 @@ class StaffController extends Controller
             abort(404, 'Staff not found.');
         }
 
-        if ($request->isMethod('post')) {
-            $validated = $request->validate([
-                'name' => 'required|string|max:225',
-                'email' => 'required|string|email|max:225|unique:staff,email,' . $staffId,
-                'phone' => 'nullable|regex:/^\+977-9\d{9}$/',
-                'password' => 'nullable|string|min:8',
-            ]);
+        return view('staff.setting', compact('staff', 'photo'));
+    }
 
-            $updateData = [
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'phone' => $validated['phone'],
-                'updated_at' => now()
-            ];
+    public function updateSetting(UpdateStaffSettingRequest $request)
+    {
+        $staffId = Auth::guard('staff')->id();
+        $validated = $request->validated();
 
-            if (!empty($validated['password'])) {
-                $updateData['password'] = bcrypt($validated['password']);
-            }
+        $updateData = [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'updated_at' => now(),
+        ];
 
-            DB::table('staff')->where('id', $staffId)->update($updateData);
-
-            return redirect()->back()->with('success', 'Profile updated successfully.');
+        if (!empty($validated['password'])) {
+            $updateData['password'] = Hash::make($validated['password']);
         }
 
-        return view('staff.setting', compact('staff', 'photo'));
+        DB::table('staff')->where('id', $staffId)->update($updateData);
+
+        return redirect()->back()->with('success', 'Profile updated successfully.');
     }
 
     public function orderView(Request $request, $id){
@@ -249,14 +245,8 @@ class StaffController extends Controller
     public function create(){
         return view('restaurant.staff.create');
     }
-    public function store(Request $request){
-        $validated=$request->validate([
-            'name'=> 'required|string|max:225',
-            'email'=> 'required|string|email|max:225|unique:staff',
-            'phone'=> 'nullable|regex:/^\+977-9\d{9}$/',
-            'role'=> 'required|integer',
-            'password'=> 'required|string|min:8',
-        ]);
+    public function store(StoreStaffAccountRequest $request){
+        $validated = $request->validated();
 
     }
 }

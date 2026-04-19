@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SuperAdmin\CreateStaffRequest;
+use App\Http\Requests\SuperAdmin\RegisterRestaurantRequest;
+use App\Http\Requests\SuperAdmin\SearchAdminRequest;
+use App\Http\Requests\SuperAdmin\StoreRestaurantRequest;
+use App\Http\Requests\SuperAdmin\UpdateRestaurantRequest;
+use App\Http\Resources\SuperAdmin\AdminLookupResource;
 use Illuminate\Http\Request;
 use App\Models\Restaurant;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use App\Models\Admin;
 use App\Models\AdminRestaurant;
 use App\Models\Staff;
@@ -19,32 +23,20 @@ class RestaurantController extends Controller
     /**
      * Public restaurant registration (signup page)
      */
-    public function registerRestaurant(Request $request)
+    public function registerRestaurant(RegisterRestaurantRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:restaurants,email',
-            'domain' => 'required|string|max:255|unique:restaurants,domain',
-            'subdomain' => 'nullable|string|max:255|unique:restaurants,subdomain',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+        $validated = $request->validated();
 
         try {
             DB::beginTransaction();
 
             // Create restaurant
             $restaurant = Restaurant::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'domain' => $request->domain,
-                'subdomain' => $request->subdomain,
-                'password' => Hash::make($request->password),
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'domain' => $validated['domain'],
+                'subdomain' => $validated['subdomain'] ?? null,
+                'password' => Hash::make($validated['password']),
                 'status' => 'pending', // Pending approval by super admin
             ]);
 
@@ -85,33 +77,22 @@ class RestaurantController extends Controller
 
         return view('admin.restaurant.add',compact('admin'));
     }
-    public function store(Request $request)
+    public function store(StoreRestaurantRequest $request)
     {
+        $validated = $request->validated();
 
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-
-            'domain' => 'required|string|max:255|unique:restaurants,domain',
-            'subdomain' => 'required|string|max:255|unique:restaurants,subdomain',
-            'owner_id' => 'required|exists:admins,id',
-            'status' => 'required|in:active,inactive,pending',
-        ]);
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
         $restaurant = new Restaurant();
-        $restaurant->name = $request->input('name');
-
-        $restaurant->domain = $request->input('domain');
-        $restaurant->subdomain = $request->input('subdomain');
-        $restaurant->owner_id = $request->input('owner_id');
-        $restaurant->status = $request->input('status');
+        $restaurant->name = $validated['name'];
+        $restaurant->domain = $validated['domain'];
+        $restaurant->subdomain = $validated['subdomain'];
+        $restaurant->owner_id = $validated['owner_id'];
+        $restaurant->status = $validated['status'];
         $restaurant->save();
 
         return redirect()->route('super_admin.restaurant.index')->with('success', 'Restaurant added successfully.');
     }
-    public function search(Request $request){
-        $query = trim((string) $request->input('query', ''));
+    public function search(SearchAdminRequest $request){
+        $query = trim((string) ($request->validated()['query'] ?? ''));
 
         $missingAdmins = DB::table('admin__restaurants as ar')
     ->leftJoin('restaurants as r', 'ar.admin_id', '=', 'r.owner_id')
@@ -120,15 +101,15 @@ class RestaurantController extends Controller
     ->havingRaw('actual_count < ar.restaurant_count')
     ->pluck('ar.admin_id');
 
-$admins = Admin::whereIn('id', $missingAdmins)
-    ->where(function ($q) use ($query) {
-        $q->where('name', 'like', "%{$query}%")
-          ->orWhere('email', 'like', "%{$query}%");
-    })
-    ->limit(10)
-    ->get(['id', 'name', 'email']);
+        $admins = Admin::whereIn('id', $missingAdmins)
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                  ->orWhere('email', 'like', "%{$query}%");
+            })
+            ->limit(10)
+            ->get(['id', 'name', 'email']);
 
-    return response()->json($admins);
+        return response()->json(AdminLookupResource::collection($admins));
     }
     public function edit($id)
     {
@@ -146,27 +127,17 @@ $admins = Admin::whereIn('id', $missingAdmins)
 
         return view('admin.restaurant.edit', compact('restaurant', 'admin'));
     }
-    public function update(Request $request, $id)
+    public function update(UpdateRestaurantRequest $request, $id)
     {
         $restaurant = Restaurant::findOrFail($id);
 
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'domain' => ['required','string','max:255', Rule::unique('restaurants')->ignore($restaurant->id)],
-            'subdomain' => ['required','string','max:255', Rule::unique('restaurants')->ignore($restaurant->id)],
-            'owner_id' => 'required|exists:admins,id',
-            'status' => 'required|in:active,inactive,pending',
-        ]);
+        $validated = $request->validated();
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $restaurant->name = $request->input('name');
-        $restaurant->domain = $request->input('domain');
-        $restaurant->subdomain = $request->input('subdomain');
-        $restaurant->owner_id = $request->input('owner_id');
-        $restaurant->status = $request->input('status');
+        $restaurant->name = $validated['name'];
+        $restaurant->domain = $validated['domain'];
+        $restaurant->subdomain = $validated['subdomain'];
+        $restaurant->owner_id = $validated['owner_id'];
+        $restaurant->status = $validated['status'];
         $restaurant->save();
 
         return redirect()->route('super_admin.restaurant.index')->with('success', 'Restaurant updated successfully.');
@@ -181,24 +152,16 @@ $admins = Admin::whereIn('id', $missingAdmins)
         $restaurant = Restaurant::with('owner','staff')->findOrFail($id);
         return view('admin.restaurant.staff.index', compact('restaurant'));
     }
-    public function staffcreate(Request $request)
+    public function staffcreate(CreateStaffRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name'=> 'required|string|max:225',
-            'email'=> 'required|string|email|max:225|unique:staff',
-            'phone'=> 'nullable|regex:/^\+977-9\d{9}$/',
-            'role'=> 'required|integer',
-            'password'=> 'required|string|min:8',
-        ]);
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
+        $validated = $request->validated();
+
         $staff = new Staff();
-        $staff->name = $request->input('name');
-        $staff->email = $request->input('email');
-        $staff->phone = $request->input('phone');
-        $staff->role = $request->input('role');
-        $staff->password = Hash::make($request->input('password'));
+        $staff->name = $validated['name'];
+        $staff->email = $validated['email'];
+        $staff->phone = $validated['phone'] ?? null;
+        $staff->role = $validated['role'];
+        $staff->password = Hash::make($validated['password']);
         $staff->save();
 
         return redirect()->back()->with('success', 'Staff added successfully.');

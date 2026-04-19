@@ -83,8 +83,8 @@ Route::prefix('super_admin')->middleware(['auth:super_admin'])->name('super_admi
 Route::prefix('admin')->middleware(['auth:admin'])->name('admin.')->group(function () {
     Route::post('/logout', [AdminLogin::class, 'logout'])->name('logout');
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-    Route::match(['get', 'put'], '/profile', [AdminDashboardController::class, 'profile']
-    )->name('profile');
+    Route::get('/profile', [AdminDashboardController::class, 'profile'])->name('profile');
+    Route::put('/profile', [AdminDashboardController::class, 'updateProfile'])->name('profile.update');
     Route::prefix('/restaurants')->name('restaurant.')->group(function () {
         Route::post('/store', [AdminDashboardController::class, 'store'])->name('store');
         Route::get('/edit', [AdminRestaurantController::class, 'edit'])->name('edit');
@@ -149,8 +149,8 @@ Route::prefix('restaurant')->name('restaurant.')->group(function () {
         Route::get('/start/{id}', [RestaurantStaffDeliveryController::class, 'startDelivery'])->name('start');
         Route::get('/complete/{id}', [RestaurantStaffDeliveryController::class, 'completeDelivery'])->name('completed');
         Route::get('/ongoing', [RestaurantStaffDeliveryController::class, 'ongoingDeliveries'])->name('ongoing');
-        Route::match(['get', 'put'], '/profile', [RestaurantStaffDeliveryController::class, 'profile']
-        )->name('profile');
+        Route::get('/profile', [RestaurantStaffDeliveryController::class, 'profile'])->name('profile');
+        Route::put('/profile', [RestaurantStaffDeliveryController::class, 'updateProfile'])->name('profile.update');
            // Poll and mark-seen endpoints for dashboard
            Route::get('/poll', [RestaurantStaffDeliveryController::class, 'pollDeliveries'])->name('poll');
            Route::post('/mark-seen', [RestaurantStaffDeliveryController::class, 'markDeliveriesSeen'])->name('markSeen');
@@ -159,8 +159,8 @@ Route::prefix('restaurant')->name('restaurant.')->group(function () {
         Route::get('/index', [RestaurantStaffController::class, 'index'])->name('index');
         Route::post('/assign-delivery', [RestaurantStaffController::class, 'assignDelivery'])->name('assign-delivery');
         Route::post('/update-order-status', [RestaurantStaffController::class, 'updateOrderStatus'])->name('update-order-status');
-        Route::match(['get', 'post'], '/setting', [RestaurantStaffController::class, 'setting']
-        )->name('setting');
+        Route::get('/setting', [RestaurantStaffController::class, 'setting'])->name('setting');
+        Route::post('/setting', [RestaurantStaffController::class, 'updateSetting'])->name('setting.update');
         Route::get('/logout', [LogoutController::class, 'logout']
         )->name('logout');
         Route::get('/order-view/{id}', [RestaurantStaffController::class, 'orderView'])->name('order.view');
@@ -192,8 +192,8 @@ Route::post('/logout', [LogoutController::class, 'logout']
 )->name('logout');
 Route::get('/logoutPage',[LogoutController::class, 'logoutPage']
 )->name('logout.page');
-Route::match(['get', 'post'], '/kitchen/login', [RestaurantAuthController::class, 'kitchenLogin']
-    )->name('kitchen.login');
+Route::get('/kitchen/login', [RestaurantAuthController::class, 'showKitchenLogin'])->name('kitchen.login');
+Route::post('/kitchen/login', [RestaurantAuthController::class, 'kitchenLogin']);
 
 
 // Route::middleware(['auth:staff','staff.role:0'])->group(function () {

@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SuperAdmin\StoreAdminRequest;
+use App\Http\Requests\SuperAdmin\StoreAdminWithRestaurantRequest;
+use App\Http\Requests\SuperAdmin\SuperAdminLoginRequest;
+use App\Http\Requests\SuperAdmin\UpdateAdminRequest;
 use Illuminate\Http\Request;
 use App\Models\Admin;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use App\Models\AdminPhoto;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -23,18 +25,9 @@ class AdminController extends Controller
         return view('admin.authentication.login');
     }
 
-    public function login(Request $request)
+    public function login(SuperAdminLoginRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string|min:6',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $credentials = $request->only('email', 'password');
+        $credentials = $request->validated();
         if(Auth::guard('super_admin')->attempt($credentials)){
 
             return redirect()->route('super_admin.index');
@@ -100,27 +93,9 @@ class AdminController extends Controller
     {
         return view('admin.res_admin.add');
     }
-    public function store(Request $request)
+    public function store(StoreAdminRequest $request)
     {
-        // Use a validator so we can return JSON errors for AJAX requests
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:admins',
-            'password' => 'required|string|min:8',
-            'status' => 'required|in:active,inactive,pending',
-            'restaurant_count' => 'nullable|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-        ]);
-
-        if ($validator->fails()) {
-            if ($request->wantsJson() || $request->ajax()) {
-                return response()->json(['errors' => $validator->errors()], 422);
-            }
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-
-        $validatedData = $validator->validated();
+        $validatedData = $request->validated();
 
         return view('admin.res_admin.restaurant.add',compact('validatedData'));
 
@@ -171,33 +146,22 @@ class AdminController extends Controller
         //     return redirect()->back()->with('error', 'Failed to create admin.');
         // }
     }
-    public function restaurantStore(Request $request)
+    public function restaurantStore(StoreAdminWithRestaurantRequest $request)
     {
 
-
-        $res_validator=validator::make($request->all(), [
-            'res_name' => 'required|string|max:255',
-            'res_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'domain' => 'required|string|max:255|unique:restaurants,domain',
-            'subdomain'=>'nullable|string|max:255',
-            'status' => 'required|in:active,inactive,pending',
-        ]);
-        if($res_validator->fails()){
-            return redirect()->back()->withErrors($res_validator)->withInput();
-        }
-        $res_data=$res_validator->validated();
+        $res_data = $request->validated();
      DB::beginTransaction();
      try { $admin=new Admin();
-        $admin->name = $request->owner_name;
-        $admin->email = $request->owner_email;
-        $admin->password = Hash::make($request->owner_password);
-        $admin->status = $request->owner_status;
+        $admin->name = $res_data['owner_name'];
+        $admin->email = $res_data['owner_email'];
+        $admin->password = Hash::make($res_data['owner_password']);
+        $admin->status = $res_data['owner_status'];
         $admin->save();
         if($request->hasFile('owner_image')){
             $path = $request->file('owner_image')->store('admin/image', 'public');
             $adminPhoto = new AdminPhoto();
             $adminPhoto->admin_id = $admin->id;
-            $adminPhoto->photo_url = $path;
+            $adminPhoto->photo_path = $path;
             $adminPhoto->save();
         }
 
@@ -208,14 +172,20 @@ class AdminController extends Controller
         $restaurant->owner_id = $admin->id;
         $restaurant->status = $res_data['status'];
         $restaurant->save();
+        $adminRestaurant = new AdminRestaurant();
+        $adminRestaurant->admin_id = $admin->id;
+        $adminRestaurant->restaurant_count = 1;
+        $adminRestaurant->save();
+
+        $restaurantSetting = new RestaurantSetting();
+        $restaurantSetting->restaurant_id = $restaurant->id;
         if($request->hasFile('res_logo')){
             $path = $request->file('res_logo')->store('restaurant/logo', 'public');
             $restaurant->logo_path = $path;
-            $restaurantSetting=new RestaurantSetting();
-            $restaurantSetting->restaurant_id = $restaurant->id;
-            $restaurantSetting->logo=$path;
-            $restaurantSetting->save();
+            $restaurant->save();
+            $restaurantSetting->logo = $path;
         }
+        $restaurantSetting->save();
         DB::commit();
         return redirect()->route('super_admin.admins.index')->with('success', 'Admin and Restaurant created successfully.');
      } catch (\Exception $e) {
@@ -233,27 +203,11 @@ class AdminController extends Controller
         return view('admin.res_admin.edit', compact('admin'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateAdminRequest $request, $id)
     {
         $admin = Admin::findOrFail($id);
 
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => ['required','string','email','max:255', Rule::unique('admins')->ignore($admin->id)],
-            'password' => 'nullable|string|min:8',
-            'status' => 'required|in:active,inactive,pending',
-            'restaurant_count' => 'nullable|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-        ]);
-
-        if ($validator->fails()) {
-            if ($request->wantsJson() || $request->ajax()) {
-                return response()->json(['errors' => $validator->errors()], 422);
-            }
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $data = $validator->validated();
+        $data = $request->validated();
 
         DB::beginTransaction();
         try {
@@ -321,7 +275,7 @@ class AdminController extends Controller
         DB::beginTransaction();
         try {
             // Delete associated photo if exists
-            $adminPhoto = Adminphoto::where('admin_id', $admin->id)->first();
+            $adminPhoto = AdminPhoto::where('admin_id', $admin->id)->first();
             if ($adminPhoto) {
                 if ($adminPhoto->photo_path && Storage::disk('public')->exists($adminPhoto->photo_path)) {
                     Storage::disk('public')->delete($adminPhoto->photo_path);
