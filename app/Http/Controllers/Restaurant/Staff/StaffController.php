@@ -12,89 +12,96 @@ use App\Events\DeliveryAssigned;
 class StaffController extends Controller
 {
     public function index(Request $request){
-       
-        
-        
+
+
+
         $staff = DB::table('staff')->where('id', Auth::guard('staff')->id())->first();
         if (!$staff) {
             abort(404, 'Staff not found.');
         }
-        
+
         $restaurant = DB::table('restaurants')->where('id', $staff->restaurant_id)->first();
         if (!$restaurant) {
             abort(404, 'Restaurant not found.');
         }
-        
+
                   $busyDeliveryId=DB::table('orders')->where('delivery_status','in_transit')->pluck('delivery_person_id')->toArray();
         $delivery = DB::table('staff')
             ->leftJoin('staff_photos', 'staff.id', '=', 'staff_photos.staff_id')
             ->where('restaurant_id', $staff->restaurant_id)
-            
+
             ->where('role', 2)
             ->whereNotIn('staff.id',$busyDeliveryId)
             ->select('staff.*','staff_photos.photo_url as photo_url')
             ->get();
 
-        
 
-       
+
+
         $orders = DB::table('orders')
             ->leftJoin('users', 'orders.customer_id', '=', 'users.id')
             ->leftJoin('staff as delivery_staff', 'orders.delivery_person_id', '=', 'delivery_staff.id')
             ->where('orders.restaurant_id', $staff->restaurant_id)
-            ->select('orders.*', 'users.name as customer_name', 'users.email as customer_email', 
+            ->select('orders.*', 'users.name as customer_name', 'users.email as customer_email',
                      'delivery_staff.name as delivery_person_name')
             ->orderBy('orders.created_at', 'desc')
             ->get();
 
         return view('staff.dashboard', compact('staff', 'restaurant', 'orders', 'delivery'));
     }
-    
+
     public function assignDelivery(Request $request)
     {
         $validated = $request->validate([
             'order_id' => 'required|integer|exists:orders,id',
             'delivery_person_id' => 'required|integer|exists:staff,id'
         ]);
-        
-        
+
+
         $staff = DB::table('staff')->where('id', Auth::guard('staff')->id())->first();
-        
-    
+        if (!$staff) {
+            return response()->json(['success' => false, 'message' => 'Staff not found'], 404);
+        }
+
+
         $order = DB::table('orders')
             ->where('id', $validated['order_id'])
             ->where('restaurant_id', $staff->restaurant_id)
             ->first();
-            
+
         if (!$order) {
             return response()->json(['success' => false, 'message' => 'Order not found'], 404);
         }
-        
-       
+
+
         $deliveryPerson = DB::table('staff')
             ->where('id', $validated['delivery_person_id'])
             ->where('restaurant_id', $staff->restaurant_id)
             ->where('role', 2)
             ->first();
-            
+
         if (!$deliveryPerson) {
             return response()->json(['success' => false, 'message' => 'Invalid delivery person'], 404);
         }
-        
-     
-       DB::table('orders')
-            ->where('id', $validated['order_id'])
-            ->update([
-                'delivery_person_id' => $validated['delivery_person_id'],
-                'status' => 1,
-                'updated_at' => now()
-            ]);
-           $deliveries= new Delivery;
-        $deliveries->order_id = $validated['order_id'];
-        $deliveries->delivery_person_id = $validated['delivery_person_id'];
-        $deliveries->is_seen= false;
-        $deliveries->assigned_at = now();
-        $deliveries->save();
+
+
+        DB::transaction(function () use ($validated) {
+            DB::table('orders')
+                ->where('id', $validated['order_id'])
+                ->update([
+                    'delivery_person_id' => $validated['delivery_person_id'],
+                    'status' => 'accepted',
+                    'updated_at' => now(),
+                ]);
+
+            $delivery = new Delivery();
+            $delivery->order_id = $validated['order_id'];
+            $delivery->delivery_person_id = $validated['delivery_person_id'];
+            $delivery->is_seen = false;
+            $delivery->assigned_at = now();
+            $delivery->save();
+        });
+
             $deliveryManId=$validated['delivery_person_id'];
             $orderPayload = DB::table('orders')
                 ->leftJoin('users', 'orders.customer_id', '=', 'users.id')
@@ -102,7 +109,7 @@ class StaffController extends Controller
                     'orders.id',
                     'orders.payment_method',
                     'orders.status',
-                    
+
                     'orders.delivery_time',
                     'orders.total_amount',
                     'orders.payment_status',
@@ -111,78 +118,79 @@ class StaffController extends Controller
                 ->where('orders.id', $validated['order_id'])
                 ->first();
             event(new DeliveryAssigned($orderPayload, $deliveryManId));
-            
+
         return response()->json([
             'success' => true,
             'message' => 'Delivery person assigned successfully'
         ]);
     }
-    
+
     public function updateOrderStatus(Request $request)
     {
         $validated = $request->validate([
             'order_id' => 'required|integer|exists:orders,id',
-            'status' => 'required|string|in:pending,accepted,preparing,ready,out_for_delivery,delivered,completed,cancelled'
+            'status' => 'required|string|in:pending,accepted,cooking,cooked,completed,cancelled'
         ]);
-        
- 
-        
+
+
+
         $staff = DB::table('staff')->where('id', Auth::guard('staff')->id())->first();
-        
-       
+
+
         $order = DB::table('orders')
             ->where('id', $validated['order_id'])
             ->where('restaurant_id', $staff->restaurant_id)
             ->first();
-            
+
         if (!$order) {
             return response()->json(['success' => false, 'message' => 'Order not found'], 404);
         }
-        
-     
+
+
         DB::table('orders')
             ->where('id', $validated['order_id'])
-            ->update([
+            ->update(array_filter([
                 'status' => $validated['status'],
-                'accepted_at' => now(),
-                'updated_at' => now()
-            ]);
-        
+                'accepted_at' => $validated['status'] === 'accepted' ? now() : null,
+                'updated_at' => now(),
+            ], static fn ($value) => $value !== null));
+
         return response()->json([
             'success' => true,
             'message' => 'Order status updated successfully'
         ]);
     }
-    
+
     public function setting(Request $request){
 
-        $staff = DB::table('staff')->where('id', Auth::guard('staff')->id())->first();
+        $staffId = Auth::guard('staff')->id();
+        $staff = DB::table('staff')->where('id', $staffId)->first();
         $photo =DB::table('staff_photos')->where('staff_id', Auth::guard('staff')->id())->first();
         if (!$staff) {
             abort(404, 'Staff not found.');
         }
-        
+
         if ($request->isMethod('post')) {
             $validated = $request->validate([
                 'name' => 'required|string|max:225',
                 'email' => 'required|string|email|max:225|unique:staff,email,' . $staffId,
-                'phone' => 'nullable|string|max:15',
+                'phone' => 'nullable|regex:/^\+977-9\d{9}$/',
                 'password' => 'nullable|string|min:8',
             ]);
-            
+
             $updateData = [
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
                 'updated_at' => now()
             ];
-            
+
             if (!empty($validated['password'])) {
                 $updateData['password'] = bcrypt($validated['password']);
             }
-            
+
             DB::table('staff')->where('id', $staffId)->update($updateData);
-            
+
             return redirect()->back()->with('success', 'Profile updated successfully.');
         }
 
@@ -245,10 +253,10 @@ class StaffController extends Controller
         $validated=$request->validate([
             'name'=> 'required|string|max:225',
             'email'=> 'required|string|email|max:225|unique:staff',
-            'phone'=> 'nullable|string|max:15',
+            'phone'=> 'nullable|regex:/^\+977-9\d{9}$/',
             'role'=> 'required|integer',
             'password'=> 'required|string|min:8',
         ]);
-        
+
     }
 }

@@ -21,15 +21,17 @@ class OrderController extends Controller
         // if (!$adminId) {
         //     abort(403, 'Admin session missing.');
         // }
-    
+
         $restaurant = Restaurant::where('owner_id', Auth::id())->first();
         if (!$restaurant) {
             abort(403, 'Restaurant not found.');
         }
-        $orders = Order::where('restaurant_id', $restaurant->id)->get();
+        $orders = Order::where('restaurant_id', $restaurant->id)
+            ->latest()
+            ->paginate(20);
         $staff = Staff::where('restaurant_id', $restaurant->id)->get();
         $menu_category = MenuCategory::where('restaurant_id', $restaurant->id)->get();
-        $order_items = OrderItem::whereIn('order_id', $orders->pluck('id'))->get();
+        $order_items = OrderItem::whereIn('order_id', $orders->getCollection()->pluck('id'))->get();
 
         return view('restaurant.order.index', compact('orders', 'staff', 'menu_category', 'order_items'));
     }

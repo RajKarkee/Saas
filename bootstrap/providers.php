@@ -6,6 +6,4 @@ return [
     App\Providers\TelescopeServiceProvider::class,
     App\Providers\ViewComposerServiceProvider::class,
     App\Providers\ViewServceProvider::class,
-    App\providers\ViewComposerServiceProvider::class,
-    App\Providers\AdminSidebarViewServiceProvider::class,
 ];

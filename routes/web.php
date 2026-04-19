@@ -23,16 +23,17 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('landingpage');
 })->name('landingPage.home');
-Route::get('/check-unique', [LandingAuthenticationController::class, 'checkUnique'])->name('check.unique');
-Route::post('/check-domain', [LandingAuthenticationController::class, 'checkDomain'])->name('check.domain');
+Route::middleware('throttle:30,1')->group(function () {
+    Route::get('/check-unique', [LandingAuthenticationController::class, 'checkUnique'])->name('check.unique');
+    Route::post('/check-domain', [LandingAuthenticationController::class, 'checkDomain'])->name('check.domain');
+    Route::post('/user/admin/create', [LandingAuthenticationController::class, 'register'])->name('user.admin.create');
+});
 Route::get('/login', function () {
     return view('auth.login');
 })->name('landingPage.login');
 Route::get('/signup', function () {
     return view('auth.signup');
 })->name('landingPage.signup');
-// Final combined create endpoint for admin + restaurant (two-step signup)
-Route::post('/user/admin/create', [LandingAuthenticationController::class, 'register'])->name('user.admin.create');
 // Route::post('/signup', [Super_AdminRestaurantController::class, 'registerRestaurant'])->name('restaurant.signup.store');
 Route::get('/dashboard', function () {
     return view('admin.layout.dashboard');
@@ -41,11 +42,13 @@ Route::get('/delivery/login', function () {
     return view('delivery.login');
 })->name('delivery.login');
 Route::get('/superadmin/login', [SuperAdminadminController::class, 'showLoginForm'])->name('superadmin.login');
-Route::post('/superadmin/login', [SuperAdminadminController::class, 'login']);
-Route::post('/superadmin/logout', [SuperAdminadminController::class, 'logout'])->name('superadmin.logout');
 Route::get('admin/login', [AdminLogin::class, 'login'])->name('login');
-Route::post('admin/verify', [AdminLogin::class, 'verify'])->name('admin.verify');
-Route::post('delivery/verify', [RestaurantAuthController::class, 'login'])->name('delivery.verify');
+Route::middleware('throttle:10,1')->group(function () {
+    Route::post('/superadmin/login', [SuperAdminadminController::class, 'login']);
+    Route::post('/superadmin/logout', [SuperAdminadminController::class, 'logout'])->name('superadmin.logout');
+    Route::post('admin/verify', [AdminLogin::class, 'verify'])->name('admin.verify');
+    Route::post('delivery/verify', [RestaurantAuthController::class, 'login'])->name('delivery.verify');
+});
 
 Route::prefix('super_admin')->middleware(['auth:super_admin'])->name('super_admin.')->group(function () {
     Route::post('/logout', [SuperAdminadminController::class, 'logout'])->name('logout');

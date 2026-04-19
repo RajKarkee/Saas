@@ -29,9 +29,9 @@ class RestaurantController extends Controller
      */
     public function edit(Request $request)
     {
- 
 
-       
+
+
         $restaurant = Restaurant::where('owner_id', Auth::id())->first();
         if (!$restaurant) {
             $restaurant = new Restaurant([
@@ -53,11 +53,11 @@ class RestaurantController extends Controller
      */
     public function update(Request $request)
     {
-    
+
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->first();
 
-    
+
         $domainRule = ['required', 'string', 'max:255'];
         if ($restaurant) {
             $domainRule[] = Rule::unique('restaurants', 'domain')->ignore($restaurant->id);
@@ -76,7 +76,7 @@ class RestaurantController extends Controller
         if (!$restaurant) {
             // Create a new restaurant for this admin
             $restaurant = new Restaurant();
-            $restaurant->owner_id = $adminId;
+            $restaurant->owner_id = Auth::id();
         }
 
     // Upsert fields (excluding logo handling)
@@ -107,15 +107,15 @@ public function updateSchedules(Request $request)
 
     foreach ($validDays as $index => $day) {
 
-      
+
         $o = $opening[$index] ?? null;
         $c = $closing[$index] ?? null;
-        $isOpen = array_key_exists($index, $openFlags); 
+        $isOpen = array_key_exists($index, $openFlags);
 
-    
+
         if ($isOpen) {
 
-           
+
             if (!$o || !$c) {
                 $messages[] = "$day requires both opening and closing time.";
                 continue;
@@ -127,17 +127,17 @@ public function updateSchedules(Request $request)
             }
         }
 
-      
+
         $record = $restaurant->schedules()->firstOrNew(['day_of_week' => $day]);
 
-    
-        $record->is_open      = $openFlags[$index];
+
+        $record->is_open      = $isOpen;
         $record->opening_time = $isOpen ? $o : null;
         $record->closing_time = $isOpen ? $c : null;
         $record->save();
     }
 
-  
+
     if (count($messages) > 0) {
         return back()->with('error', 'Some schedule errors: ' . implode(', ', $messages));
     }
@@ -155,7 +155,7 @@ public function updateSchedules(Request $request)
         // Ensure the admin has a restaurant
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
-        
+
         if ($request->isMethod('get')) {
             $setting = $restaurant->settings()->first();
             return view('restaurant.restaurantSetting', [
@@ -164,10 +164,10 @@ public function updateSchedules(Request $request)
             ]);
         }
 
-        
+
         $validated = $request->validate([
             'address' => ['nullable', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:50'],
+            'phone' => ['nullable', 'regex:/^\+977-9\d{9}$/'],
             'email' => ['nullable', 'email', 'max:255'],
             'map_url' => ['nullable', 'url', 'max:2048'],
             'logo' => ['nullable', 'image', 'max:2048'],
@@ -199,13 +199,13 @@ public function updateSchedules(Request $request)
     }
     public function staffIndex(Request $request)
     {
-      
+
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $staff = $restaurant->staff()->get();
         $staff_photos = StaffPhoto::whereIn('staff_id', $staff->pluck('id'))->get()->keyBy('staff_id');
-        
+
         return view('restaurant.staff.staff',  compact('staff', 'staff_photos')
         );
     }
@@ -228,12 +228,12 @@ public function staffStore(Request $request)
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('staff', 'email')],
             'password' => ['string', 'min:8', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:50'],
+            'phone' => ['nullable', 'regex:/^\+977-9\d{9}$/'],
             'role' => ['required', 'string', 'in:Manager,Delivery Person,Staff'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
             'photo' => ['nullable', 'image', 'max:2048'],
         ]);
-     
+
         $validated['role']=$roleMap[$validated['role']];
 
         $staff = $restaurant->staff()->create([
@@ -257,7 +257,7 @@ public function staffStore(Request $request)
     }
     public function staffEdit(Request $request, $staffId)
     {
-  
+
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
@@ -269,13 +269,13 @@ public function staffStore(Request $request)
         } else {
             $staff->photo_url = null;
         }
-      
+
 
         return view('restaurant.staff.edit', compact('staff'));
     }
     public function staffUpdate(Request $request, $staffId)
     {
-  
+
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $staff = $restaurant->staff()->findOrFail($staffId);
@@ -290,7 +290,7 @@ public function staffStore(Request $request)
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('staff', 'email')->ignore($staff->id)],
             'password' => ['nullable', 'string', 'min:8', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:50'],
+            'phone' => ['nullable', 'regex:/^\+977-9\d{9}$/'],
             'role' => ['required', 'string', 'in:Manager,Delivery Person,Staff'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
             'photo' => ['nullable', 'image', 'max:2048'],
@@ -341,7 +341,7 @@ public function staffStore(Request $request)
     }
     public function deliveryMen(Request $request)
     {
-   
+
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
@@ -353,7 +353,7 @@ public function staffStore(Request $request)
     }
     public function manager(Request $request)
     {
- 
+
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
@@ -363,7 +363,7 @@ public function staffStore(Request $request)
         );
     }
     public function categoryIndex(Request $request){
-   
+
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
         $categories = $restaurant->menuCategories()->get();
         return view('restaurant.menu.categories.index', compact('categories'));
@@ -372,7 +372,7 @@ public function staffStore(Request $request)
         return view('restaurant.menu.categories.form');
     }
     public function categoryStore(Request $request){
- 
+
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
@@ -386,7 +386,7 @@ public function staffStore(Request $request)
             'is_active' => ['nullable', 'boolean'],
         ]);
 
-      
+
    $category = new MenuCategory();
         $category->restaurant_id = $restaurant->id;
         $category->name = $validated['name'];
@@ -398,7 +398,7 @@ public function staffStore(Request $request)
         return redirect()->route('admin.restaurant.menu.categories.index')->with('success', 'Category created successfully.');
     }
     public function categoryEdit(Request $request, $categoryId){
-  
+
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
@@ -407,7 +407,7 @@ public function staffStore(Request $request)
         return view('restaurant.menu.categories.form', compact('category'));
     }
     public function categoryUpdate(Request $request, $categoryId){
- 
+
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
@@ -420,7 +420,7 @@ public function staffStore(Request $request)
             Rule::unique('menu_categories','position')->where(function($query) use ($category, $restaurant) {
                 return $query->where('restaurant_id', $restaurant->id)
                              ->where('id', '!=', $category->id);
-            }   )], 
+            }   )],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
@@ -433,7 +433,7 @@ public function staffStore(Request $request)
         return redirect()->route('admin.restaurant.menu.categories.index')->with('success', 'Category updated successfully.');
     }
     public function categoryDestroy(Request $request, $id){
- 
+
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $category = $restaurant->menuCategories()->findOrFail($id);
@@ -443,13 +443,13 @@ public function staffStore(Request $request)
         return redirect()->route('admin.restaurant.menu.categories.index')->with('success', 'Category deleted successfully.');
     }
     public function itemIndex(Request $request, $id){
-      
+
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
        $category = MenuCategory::findOrFail($id);
-      
+
 
         //
-    
+
         $itemsQuery = $restaurant->menuItems();
 
         if ($category) {
@@ -469,7 +469,7 @@ public function staffStore(Request $request)
         return view('restaurant.menu.items.form', compact('category'));
     }
     public function itemStore(Request $request, $categoryId){
-  
+
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
        $category = MenuCategory::findOrFail($categoryId);
@@ -492,7 +492,7 @@ public function staffStore(Request $request)
         $item->price = $validated['price'];
         $item->is_available = $validated['is_available'] ?? true;
         $item->stock_quantity = $validated['stock_quantity'] ?? null;
-   
+
         $item->save();
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('menu_item_images', 'public');
@@ -521,11 +521,6 @@ public function staffStore(Request $request)
         return view('restaurant.menu.items.form', compact('item', 'category','item_images'));
     }
     public function itemUpdate(Request $request, $itemId){
-        $adminId = $request->session()->get('admin_id');
-
-
-        $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
-
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
         $item = $restaurant->menuItems()->findOrFail($itemId);
@@ -543,7 +538,7 @@ public function staffStore(Request $request)
         $item->price = $validated['price'];
         $item->is_available = $validated['is_available'] ?? true;
         $item->stock_quantity = $validated['stock_quantity'] ?? null;
-   
+
         $item->save();
         if(request()->hasFile('image')){
             $imagePath = $request->file('image')->store('menu_item_images', 'public');
@@ -552,14 +547,14 @@ public function staffStore(Request $request)
             }else{
                 $image_alt = null;
             }
-           
+
    $menu_item_image= MenuItemImage::where('menu_item_id', $item->id)->first();
             if($menu_item_image){
                 $menu_item_image->image_url = $imagePath;
                 $menu_item_image->image_alt = $image_alt;
                 $menu_item_image->save();
             }else{
-                Menu_item_image::create([
+                MenuItemImage::create([
                     'menu_item_id' => $item->id,
                     'image_alt' => $image_alt ,
                     'image_url' => $imagePath,
@@ -593,19 +588,19 @@ public function staffStore(Request $request)
        $item = MenuItem::findOrFail($itemId);
        $category = MenuCategory::findOrFail($item->menu_category_id);
         //
-    
+
         $addons = $restaurant->menuItemAddons()->where('menu_item_id', $item->id)->get();
 
         return view('restaurant.menu.addons.index', compact('addons', 'item', 'category'));
     }
     public function addonCreate(Request $request, $itemId){
-    
+
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
        $item = MenuItem::findOrFail($itemId);
         return view('restaurant.menu.addons.form', compact('item','restaurant'));
     }
     public function addonStore(Request $request, $itemId){
-  
+
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
        $item = MenuItem::findOrFail($itemId);
@@ -622,14 +617,14 @@ public function staffStore(Request $request)
         $addon->menu_item_id = $item->id;
         $addon->name = $validated['name'];
         $addon->additional_price = $validated['additional_price'];
-     
+
         $addon->is_available = $validated['is_available'] ?? true;
         $addon->save();
 
         return redirect()->route('admin.restaurant.menu.items.addons.index', $item->id)->with('success', 'Addon added successfully.');
     }
     public function addonEdit(Request $request, $id){
-    
+
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
        $addon = MenuItemAddon::findOrFail($id);
@@ -638,7 +633,7 @@ public function staffStore(Request $request)
         return view('restaurant.menu.addons.form', compact('addon', 'item'));
     }
     public function addonUpdate(Request $request, $id){
-     
+
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 
@@ -653,14 +648,14 @@ public function staffStore(Request $request)
 
         $addon->name = $validated['name'];
         $addon->additional_price = $validated['additional_price'];
-     
+
         $addon->is_available = $validated['is_available'] ?? true;
         $addon->save();
-        
+
         return redirect()->route('admin.restaurant.menu.items.addons.index', $item->id)->with('success', 'Addon updated successfully.');
     }
     public function addonDestroy(Request $request, $id){
-  
+
 
         $restaurant = Restaurant::where('owner_id', Auth::id())->firstOrFail();
 

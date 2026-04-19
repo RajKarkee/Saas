@@ -23,20 +23,22 @@ class AdminSidebarViewServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        view::composer('restaurant.layout.navbar',function($view){
+        View::composer('restaurant.layout.navbar', function ($view) {
             $user = Auth::guard('admin')->user();
+            $imageUrl = null;
 
-          if($user){
-            $cacheKey = 'admin_photo_' . $user->id;
-            $imageUrl =Cache::remember($cacheKey, now()->addMinutes(30),function() use($user){
-                return DB::table('admin__photos')->where('admin_id', $user->id)->first();
-            });
-          }
+            if ($user) {
+                $cacheKey = 'admin_photo_' . $user->id;
+                $imageUrl = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($user) {
+                    return DB::table('admin__photos')->where('admin_id', $user->id)->first();
+                });
+            }
             // $imageUrl = DB::table('admin__photos')->where('admin_id', $user->id)->first();
             $image = $imageUrl ? asset('storage/' . $imageUrl->photo_path) : null;
 
             $view->with(['adminImage' => $image,
-        'adminUser' => $user]);
+                'adminUser' => $user,
+            ]);
         });
     }
 }

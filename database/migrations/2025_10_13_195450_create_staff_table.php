@@ -11,18 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('staff', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('restaurant_id')->constrained('restaurants')->onDelete('cascade')->index();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('phone')->nullable();
-            $table->enum('role',['Staff_Member','Delivery_person','Manager'])->default('Staff_Member');
-            $table->enum('status',['active','inactive'])->default('active');
-            
-            $table->timestamps();
-        });
+        // Legacy migration intentionally left as no-op.
+        // Canonical staff schema is created in 2025_10_14_122440_create_staff_table.php.
     }
 
     /**
@@ -30,6 +20,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('staff');
+        // no-op
     }
 };

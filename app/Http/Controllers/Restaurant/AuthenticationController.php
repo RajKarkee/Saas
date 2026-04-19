@@ -27,17 +27,17 @@ class AuthenticationController extends Controller
 
     if (Auth::guard('staff')->attempt($credentials)) {
 
-      
+
         $staff = Auth::guard('staff')->user();
 
 
         $restaurant = \App\Models\Restaurant::find($staff->restaurant_id);
 
-    
+
         $routeMatch = match ($staff->role) {
-            0 => route('restaurant.staff.dashboard'), 
-            1 => route('restaurant.staff.index'),     
-            2 => route('restaurant.delivery.index'),  
+            0 => route('restaurant.kitchen.index'),
+            1 => route('restaurant.staff.index'),
+            2 => route('restaurant.delivery.index'),
             default => route('restaurant.login'),
         };
 

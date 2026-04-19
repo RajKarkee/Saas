@@ -18,6 +18,8 @@ use App\Events\OrderCompleted;
 
 class KitchenController extends Controller
 {
+    private ?int $staffId = null;
+    private ?int $restaurantId = null;
 
     private function initStaffContext(){
         $this->staffId = Auth::guard('staff')->id();
@@ -25,45 +27,47 @@ class KitchenController extends Controller
     }
     public function index(Request $request)
     {
-        
+
 
         $ordertype = $this->getOrders();
         $orders = $ordertype->whereIn('status', [ 'accepted']);
         $stats = [
             'pending'  => $ordertype->where('status', 'pending')->count(),
-            'accepted' => $ordertype->where('status', 'accepted')->count(),         
+            'accepted' => $ordertype->where('status', 'accepted')->count(),
             'cooking'  => $ordertype->where('status', 'cooking')->count(),
             'cooked'   => $ordertype->where('status', 'cooked')->count(),
             'ready'    => $ordertype->where('status', 'ready')->count(),
         ];
-  
-      
+
+
         return view('kitchen.layout.app', compact('orders', 'stats'));
-    }  
+    }
     private function getOrders()
     {
         $this->initStaffContext();
         $orders = DB::table('orders')
             ->select('orders.id', 'orders.created_at', 'orders.status', 'orders.notes','orders.accepted_at')
             ->where('orders.restaurant_id', $this->restaurantId)
-           
             ->orderByDesc('orders.created_at')
+            ->get();
+
+        $orderIds = $orders->pluck('id');
+
+        $itemsByOrder = DB::table('order_items')
+            ->whereIn('order_items.order_id', $orderIds)
+            ->leftJoin('menu_items', 'menu_items.id', '=', 'order_items.menu_item_id')
+            ->select('order_items.order_id', 'order_items.quantity as quantity', 'menu_items.name as item_name')
             ->get()
-            ->map(function ($order) {
-                $items = DB::table('order_items')
-                    ->where('order_items.order_id', $order->id)
-                    ->leftJoin('menu_items', 'menu_items.id', '=', 'order_items.menu_item_id')
-                    ->select('order_items.quantity as quantity', 'menu_items.name as item_name')
-                    ->get();
+            ->groupBy('order_id');
 
-                $order->items = $items;
-                $order->quantity = (int) ($items->sum('quantity'));
-                $order->status = $this->mapDbToUiStatus($order->status);
-                $order->time_ago = Carbon::parse($order->accepted_at)->diffForHumans();
-                return $order;
-            });
-
-        return $orders;
+        return $orders->map(function ($order) use ($itemsByOrder) {
+            $items = $itemsByOrder->get($order->id, collect())->values();
+            $order->items = $items;
+            $order->quantity = (int) ($items->sum('quantity'));
+            $order->status = $this->mapDbToUiStatus($order->status);
+            $order->time_ago = $order->accepted_at ? Carbon::parse($order->accepted_at)->diffForHumans() : null;
+            return $order;
+        });
     }
 
     public function show(Request $request, int $id)
@@ -95,17 +99,17 @@ class KitchenController extends Controller
     }
 
     public function updateStatus(Request $request, int $id)
-    { 
-     
-      
+    {
+
+
         $this->initStaffContext();
 
         // $request->validate(['status' => 'required|in:pending,cooking,ready']);
 
-       
-      
- 
-   
+
+
+
+
         DB::table('orders')->where('id', $id)->update([
             'status' => 'cooking',
             'cooking_started_at' => now(),
@@ -118,7 +122,7 @@ class KitchenController extends Controller
           ->select('order_items.quantity as quantity', 'menu_items.name as item_name')
           ->get();
           $order->items=$items;
- 
+
         return view('kitchen.cooking', compact('order'));
     }
     public function cooked(Request $request, int $id)
@@ -149,14 +153,14 @@ class KitchenController extends Controller
     }
     public function cookingcom(Request $request, int $id)
     {
-        
+
         DB::table('orders')->where('id', $id)->update([
             'status' => 'cooked',
             'cooked_at' => now(),
             'updated_at' => now(),
         ]);
         $order = DB::table('orders')->where('id', $id)->first();
-        
+
         return view('kitchen.completed',compact('order'))->with('success', 'Order marked as ready.');
     }
 
@@ -173,7 +177,7 @@ class KitchenController extends Controller
                 'updated_at' => now(),
                 'completed_at' => now(),
             ]);
-       
+
             event(new OrderCompleted($order,$this->restaurantId));
             return redirect()->route('restaurant.kitchen.index')->with('success', 'Order completed successfully.');
         }
@@ -225,23 +229,23 @@ class KitchenController extends Controller
     }
     public function cookingall(Request $request)
     {
-        
+
 
         $ordertype = $this->getOrders();
         $orders = $ordertype->whereIn('status', [ 'cooking']);
-      
-  
-      
+
+
+
         return view('kitchen.cookingall', compact('orders'));
     }
     public function cookedall(Request $request)
     {
-        
+
 
         $ordertype = $this->getOrders();
         $orders = $ordertype->whereIn('status', [ 'cooked']);
-      
-  
+
+
 
         return view('kitchen.cookedall', compact('orders'));
     }

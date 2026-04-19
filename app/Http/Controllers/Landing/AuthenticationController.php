@@ -58,7 +58,7 @@ class AuthenticationController extends Controller
 
         $email = $validator->validated()['email'];
 
-    
+
     $exists = Admin::where('email', $email)->exists();
 
         if ($exists) {
@@ -122,27 +122,31 @@ class AuthenticationController extends Controller
             ], 422);
         }
 
-                $admin = new Admin();
-                $admin->name = $adminData['username'];
-                $admin->email = $adminData['email'];
-                $admin->password = Hash::make($adminData['password']);
-                $admin->status = 'active';
-                $admin->save();
+        [$admin, $restaurant] = DB::transaction(function () use ($adminData, $restaurantData) {
+            $admin = new Admin();
+            $admin->name = $adminData['username'];
+            $admin->email = $adminData['email'];
+            $admin->password = Hash::make($adminData['password']);
+            $admin->status = 'active';
+            $admin->save();
 
-                $restaurant = new Restaurant();
-                $restaurant->owner_id = $admin->id;
-                $restaurant->domain = $restaurantData['domain'] ?? null;
-                $restaurant->subdomain = $restaurantData['subdomain'] ?? null;
-                $restaurant->name = $restaurantData['name'];
-                $restaurant->status = 'pending';
-                $restaurant->save();
+            $restaurant = new Restaurant();
+            $restaurant->owner_id = $admin->id;
+            $restaurant->domain = $restaurantData['domain'] ?? null;
+            $restaurant->subdomain = $restaurantData['subdomain'] ?? null;
+            $restaurant->name = $restaurantData['name'];
+            $restaurant->status = 'pending';
+            $restaurant->save();
 
-                if (!empty($restaurantData['email'])) {
-                        $restaurant_settings = new RestaurantSetting();
-                        $restaurant_settings->restaurant_id = $restaurant->id;
-                        $restaurant_settings->email = $restaurantData['email'];
-                        $restaurant_settings->save();
-                }
+            if (!empty($restaurantData['email'])) {
+                $restaurantSettings = new RestaurantSetting();
+                $restaurantSettings->restaurant_id = $restaurant->id;
+                $restaurantSettings->email = $restaurantData['email'];
+                $restaurantSettings->save();
+            }
+
+            return [$admin, $restaurant];
+        });
 
         return response()->json([
             'success' => true,

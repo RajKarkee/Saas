@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('logo')->nullable();
             $table->string('address')->nullable();
             $table->string('phone')->nullable();
-            $table->string('email')->nulllable();
+            $table->string('email')->nullable();
             $table->string('map_url')->nullable();
             $table->timestamps();
         });

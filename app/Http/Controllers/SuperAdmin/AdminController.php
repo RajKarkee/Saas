@@ -36,10 +36,10 @@ class AdminController extends Controller
 
         $credentials = $request->only('email', 'password');
         if(Auth::guard('super_admin')->attempt($credentials)){
-         
+
             return redirect()->route('super_admin.index');
         }
-        else{   
+        else{
             return response()->json(['error' => 'Invalid Credentials'], 401);
         }
     //     $superAdmin = \App\Models\SuperAdmin::where('email', $request->email)->first();
@@ -69,12 +69,12 @@ class AdminController extends Controller
         Auth::guard('super_admin')->logout();
         return redirect()->route('superadmin.login');
         // $token = $request->session()->get('superadmin_token');
-        
+
         // if ($token) {
         //     $superAdmin = \App\Models\SuperAdmin::whereHas('tokens', function($q) use ($token) {
         //         $q->where('token', hash('sha256', $token));
         //     })->first();
-            
+
         //     if ($superAdmin) {
         //         $superAdmin->tokens()->where('token', hash('sha256', $token))->delete();
         //     }
@@ -92,9 +92,9 @@ class AdminController extends Controller
         // Handle POST request logic here (e.g., form submission)
         return response()->json(['message' => 'POST request received']);
        }
-       $admins = Admin::with('adminPhoto', 'adminRestaurant')->get();
+         $admins = Admin::with('adminPhoto', 'adminRestaurant')->latest()->paginate(20);
        return view('admin.res_admin.index', compact('admins'));
-      
+
     }
     public function create()
     {
@@ -119,9 +119,9 @@ class AdminController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        
+
         $validatedData = $validator->validated();
-  
+
         return view('admin.res_admin.restaurant.add',compact('validatedData'));
 
         // DB::beginTransaction();
@@ -143,7 +143,7 @@ class AdminController extends Controller
         //     else{
         //         $adminPhoto = new Adminphoto();
         //         $adminPhoto->admin_id = $admin->id;
-            
+
         //         $adminPhoto->save();
         //     }
 
@@ -174,7 +174,7 @@ class AdminController extends Controller
     public function restaurantStore(Request $request)
     {
 
-  
+
         $res_validator=validator::make($request->all(), [
             'res_name' => 'required|string|max:255',
             'res_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
@@ -224,7 +224,7 @@ class AdminController extends Controller
      }
 
 
-        
+
     //     return view('admin.res_admin.restaurant.add',compact('validatedData'));
     }
     public function edit($id)

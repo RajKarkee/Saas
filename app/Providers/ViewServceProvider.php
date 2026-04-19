@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use Illuminate\Suppport\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class ViewServceProvider extends ServiceProvider
@@ -12,7 +11,7 @@ class ViewServceProvider extends ServiceProvider
      */
     public function register(): void
     {
-  
+
     }
 
     /**
